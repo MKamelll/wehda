@@ -7,11 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 class Employee(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
-    national_id = models.PositiveIntegerField(
-        verbose_name=_("الرقم القومي"),
-        validators=[MaxValueValidator(999_999_999_999_99)],
-    )
-
+    national_id = models.CharField(max_length=14, verbose_name=_("الرقم القومي"))
     phone_number = PhoneNumberField(region="EG", verbose_name=_("رقم الهاتف"))
     birth_date = models.DateField(verbose_name=_("تاريخ الميلاد"))
     job_start_date = models.DateField(verbose_name=_("تاريخ استلام العمل"))
@@ -20,8 +16,8 @@ class Employee(models.Model):
         verbose_name=_("البريد الالكتروني"), blank=True, null=True
     )
     address = models.CharField(max_length=255, verbose_name=_("العنوان"))
-    practice_license_number = models.IntegerField(
-        verbose_name=_("رقم ترخيص مزاولة المهنة"), blank=True, null=True
+    practice_license_number = models.CharField(
+        max_length=255, verbose_name=_("رقم ترخيص مزاولة المهنة"), blank=True, null=True
     )
     social_status = models.CharField(max_length=50, verbose_name=_("الحالة الاجتماعية"))
     work_at = models.CharField(
@@ -40,8 +36,8 @@ class Doctor(models.Model):
     speciality = models.CharField(max_length=255, verbose_name=_("التخصص"))
 
     class Meta:
-        verbose_name = _("الطبيب البشري")
-        verbose_name_plural = _("الأطباء البشري")
+        verbose_name = _("تفاصيل الطبيب البشري")
+        verbose_name_plural = _("تفاصيل الأطباء البشري")
 
 
 class Nurse(models.Model):
@@ -50,18 +46,18 @@ class Nurse(models.Model):
     )
 
     class Meta:
-        verbose_name = _("الممرضة")
-        verbose_name_plural = _("الممرضات")
+        verbose_name = _("تفاصيل الممرض/ة")
+        verbose_name_plural = _("تفاصيل التمريض")
 
 
 class NurseAddonJob(models.Model):
     nurse = models.ForeignKey(
-        to=Nurse, related_name="nurse_addon_job", on_delete=models.PROTECT
+        to=Nurse, related_name="nurse_addon_job", on_delete=models.CASCADE
     )
 
     class Meta:
-        verbose_name = _("المهمة الإضافية للممرضة")
-        verbose_name_plural = _("المهمات الإضافية للممرضات")
+        verbose_name = _("المهمة الإضافية للممرض/ة")
+        verbose_name_plural = _("المهمات الإضافية للتمريض")
 
 
 class Dentist(models.Model):
@@ -69,12 +65,16 @@ class Dentist(models.Model):
         to=Employee, related_name="dentist_details", on_delete=models.CASCADE
     )
 
+    class Meta:
+        verbose_name = _("تفاصيل طبيب الأسنان")
+        verbose_name_plural = _("تفاصيل أطباء الأسنان")
+
 
 class EmploymentGrade(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
     date = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.PROTECT, related_name="employment_grade"
+        to=Employee, on_delete=models.CASCADE, related_name="employment_grade"
     )
 
     class Meta:
@@ -98,7 +98,7 @@ class Institution(models.Model):
 
 class Degree(models.Model):
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.PROTECT, related_name="graduation"
+        to=Employee, on_delete=models.CASCADE, related_name="graduation"
     )
     year = models.PositiveIntegerField(
         verbose_name="السنة",
@@ -120,7 +120,7 @@ class SecondedDetails(models.Model):
     original = models.CharField(max_length=255, verbose_name=_("مكان عملها الأصلي"))
     date = models.DateField(verbose_name=_("تاريخ الانتداب"))
     employee = models.OneToOneField(
-        to=Employee, on_delete=models.PROTECT, related_name="seconded_details"
+        to=Employee, on_delete=models.CASCADE, related_name="seconded_details"
     )
 
     class Meta:
@@ -134,7 +134,7 @@ class EmploymentStatus(models.Model):
         seconded = "s", _("انتداب")
 
     employee = models.OneToOneField(
-        to=Employee, on_delete=models.PROTECT, related_name="employment_type"
+        to=Employee, on_delete=models.CASCADE, related_name="employment_type"
     )
     status = models.CharField(
         choices=EmploymentChoices.choices, verbose_name=_("أساسي/انتداب")
@@ -155,9 +155,11 @@ class AdditionalDegree(models.Model):
     degree = models.CharField(choices=DegreeChoices.choices, verbose_name=_("الدرجة"))
     field_of_study = models.CharField(max_length=255, verbose_name=_("مجال الدراسة"))
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
-    institution = models.CharField(max_length=255, verbose_name=_("المؤسسة/الجامعة"))
+    institution = models.ForeignKey(
+        to=Institution, related_name="additional_degrees", on_delete=models.CASCADE
+    )
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.PROTECT, related_name="additional_degrees"
+        to=Employee, on_delete=models.CASCADE, related_name="additional_degrees"
     )
 
     class Meta:
@@ -170,7 +172,7 @@ class TrainingCertification(models.Model):
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     institution = models.CharField(max_length=255, verbose_name=_("مكان الحصول عليها"))
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.PROTECT, related_name="training_certifications"
+        to=Employee, on_delete=models.CASCADE, related_name="training_certifications"
     )
 
     class Meta:
