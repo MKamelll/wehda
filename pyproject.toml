@@ -1,0 +1,31 @@
+[project]
+name = "wehda"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Mina Kamel", email = "minallkamel@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=6.1,<7.0)",
+    "django-stubs (>=6.1.0,<7.0.0)",
+    "django-stubs-ext (>=6.1.0,<7.0.0)",
+    "django-phonenumber-field[phonenumbers] (>=8.5.0,<9.0.0)",
+]
+
+[tool.poetry]
+packages = [{ include = "wehda", from = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = ["mypy (>=2.3.1,<3.0.0)"]
+
+[tool.mypy]
+strict = true
+disable_error_code = ["import-untyped"]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "wehda.settings"
