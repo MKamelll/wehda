@@ -1,3 +1,4 @@
+from __future__ import annotations
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -23,6 +24,10 @@ class Employee(models.Model):
     work_at = models.CharField(
         max_length=255, default=_("محلة أبو علي"), verbose_name=_("مكان العمل")
     )
+
+    @property
+    def current_grade(self) -> EmploymentGrade | None:
+        return self.employment_grades.order_by("-date").first()
 
     class Meta:
         verbose_name = _("الموظف")
@@ -52,7 +57,7 @@ class Nurse(models.Model):
 
 class NurseAddonJob(models.Model):
     nurse = models.ForeignKey(
-        to=Nurse, related_name="nurse_addon_job", on_delete=models.CASCADE
+        to=Nurse, related_name="nurse_addon_jobs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -74,12 +79,13 @@ class EmploymentGrade(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
     date = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.CASCADE, related_name="employment_grade"
+        to=Employee, on_delete=models.CASCADE, related_name="employment_grades"
     )
 
     class Meta:
         verbose_name = _("الدرجة الوظيفية")
         verbose_name_plural = _("الدرجات الوظيفية")
+        ordering = ["-date"]
 
 
 class Institution(models.Model):
@@ -98,7 +104,7 @@ class Institution(models.Model):
 
 class Degree(models.Model):
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.CASCADE, related_name="graduation"
+        to=Employee, on_delete=models.CASCADE, related_name="degrees"
     )
     year = models.PositiveIntegerField(
         verbose_name="السنة",
@@ -107,7 +113,7 @@ class Degree(models.Model):
         validators=[MaxValueValidator(9999)],
     )
     institution = models.ForeignKey(
-        to=Institution, on_delete=models.PROTECT, related_name="graduation"
+        to=Institution, on_delete=models.PROTECT, related_name="degrees"
     )
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
 
