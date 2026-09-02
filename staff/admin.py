@@ -1,23 +1,66 @@
+from typing import Any
+
 from django.contrib import admin
+from django.http import HttpRequest
+from django.utils.translation import gettext_lazy as _
 
 from staff import models
+from staff.forms import SecondedRecordFormSet, SpecialityFormSet
 
 
 # Register your models here.
+class SpecialityInline(admin.StackedInline[models.Speciality, models.Employee]):
+    model = models.Speciality
+    formset = SpecialityFormSet
+    can_delete = True
+    extra = 0
+    verbose_name = _("التخصص للاطباء البشري")
+
+
+class AddonTaskInline(admin.StackedInline[models.AddonTask, models.Employee]):
+    model = models.AddonTask
+    can_delete = True
+    extra = 0
+
+
+class SecondedRecordInline(admin.StackedInline[models.SecondedRecord, models.Employee]):
+    model = models.SecondedRecord
+    formset = SecondedRecordFormSet
+    ordering = ("-start_date",)
+    can_delete = False
+    extra = 0
+
+
 class AdditionalDegreeInline(
-    admin.TabularInline[models.AdditionalDegree, models.Employee]
+    admin.StackedInline[models.AdditionalDegree, models.Employee]
 ):
     model = models.AdditionalDegree
     extra = 0
+    can_delete = True
 
 
 class TrainingCertificationInline(
-    admin.TabularInline[models.TrainingCertification, models.Employee]
+    admin.StackedInline[models.TrainingCertification, models.Employee]
 ):
     model = models.TrainingCertification
     extra = 0
+    can_delete = True
 
 
 @admin.register(models.Employee)
 class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
-    inlines = [AdditionalDegreeInline, TrainingCertificationInline]
+    list_display = ("name", "job_title", "appointment_type", "is_active")
+
+    list_filter = ("appointment_type", "speciality", "job_title")
+
+    search_fields = (
+        "name",
+        "national_id",
+    )
+    inlines = [
+        SpecialityInline,
+        SecondedRecordInline,
+        AdditionalDegreeInline,
+        TrainingCertificationInline,
+        AddonTaskInline,
+    ]
