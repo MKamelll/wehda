@@ -5,10 +5,19 @@ from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
 from staff import models
-from staff.forms import SecondedRecordFormSet, SpecialityFormSet
+from staff.forms import EmploymentGradeFormSet, SecondedRecordFormSet, SpecialityFormSet
 
 
 # Register your models here.
+class EmploymentGradeInline(
+    admin.StackedInline[models.EmploymentGrade, models.Employee]
+):
+    model = models.EmploymentGrade
+    formset = EmploymentGradeFormSet
+    can_delete = True
+    extra = 0
+
+
 class SpecialityInline(admin.StackedInline[models.Speciality, models.Employee]):
     model = models.Speciality
     formset = SpecialityFormSet
@@ -53,11 +62,9 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
 
     list_filter = ("appointment_type", "speciality", "job_title")
 
-    search_fields = (
-        "name",
-        "national_id",
-    )
+    search_fields = ("name", "national_id", "addon_tasks__name")
     inlines = [
+        EmploymentGradeInline,
         SpecialityInline,
         SecondedRecordInline,
         AdditionalDegreeInline,

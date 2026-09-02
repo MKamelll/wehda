@@ -175,14 +175,23 @@ class AddonTask(models.Model):
 
 
 class EmploymentGrade(models.Model):
-    name = models.CharField(max_length=255, verbose_name=_("اسم الدرجة"))
+    class GradeChoices(models.TextChoices):
+        DEGREE_6 = "G6", _("الدرجة السادسة")
+        DEGREE_5 = "G5", _("الدرجة الخامسة")
+        DEGREE_4 = "G4", _("الدرجة الرابعة")
+        DEGREE_3 = "G3", _("الدرجة الثالثة")
+        DEGREE_2 = "G2", _("الدرجة الثانية")
+        DEGREE_1 = "G1", _("الدرجة الأولى")
+        DEGREE_K = "K", _("درجة كبير")
+
+    name = models.CharField(choices=GradeChoices.choices, verbose_name=_("اسم الدرجة"))
     date = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="employment_grades"
     )
 
     def __str__(self) -> str:
-        return f"{self.name}/{self.date}"
+        return self.get_name_display()
 
     class Meta:
         verbose_name = _("درجة وظيفية")
@@ -220,10 +229,10 @@ class Degree(models.Model):
     institution = models.ForeignKey(
         to=Institution, on_delete=models.PROTECT, related_name="degrees"
     )
-    name = models.CharField(max_length=255, verbose_name=_("اسم الدرجة"))
+    name = models.CharField(max_length=255, verbose_name=_("اسم المؤهل"))
 
     def __str__(self) -> str:
-        return f"{self.name}/{self.year}/{self.institution}"
+        return self.name
 
     class Meta:
         verbose_name = _("مؤهل أساسي")
@@ -280,7 +289,7 @@ class AdditionalDegree(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"{self.name}/{self.field_of_study}/{self.date_of_certification}/{self.institution}"
+        return self.name
 
     class Meta:
         verbose_name = _("مؤهل إضافي")
@@ -296,7 +305,7 @@ class TrainingCertification(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"{self.name}/{self.date_of_certification}/{self.institution}"
+        return self.name
 
     class Meta:
         verbose_name = _("دورة تدريبية")

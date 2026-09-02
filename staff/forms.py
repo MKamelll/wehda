@@ -3,7 +3,7 @@ from xml.dom import ValidationErr
 
 from django.forms import BaseInlineFormSet, ValidationError
 
-from staff.models import SecondedRecord, Speciality
+from staff.models import EmploymentGrade, SecondedRecord, Speciality
 
 
 class SecondedRecordFormSet(BaseInlineFormSet[SecondedRecord, Any]):
@@ -30,3 +30,11 @@ class SpecialityFormSet(BaseInlineFormSet[Speciality, Any]):
             raise ValidationError("يجب إضافة تخصص للطبيب البشري")
         if job_title != "doctor" and hasattr(self.instance, "speciality"):
             raise ValidationError("التخصص للطبيب البشري فقط")
+
+
+class EmploymentGradeFormSet(BaseInlineFormSet[EmploymentGrade, Any]):
+    def clean(self) -> None:
+        super().clean()
+
+        if not hasattr(self.instance, "employment_grades"):
+            raise ValidationError("يجب إضافة درجة وظيفية واحدة علي الأقل")
