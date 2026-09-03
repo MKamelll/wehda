@@ -15,6 +15,14 @@ from staff.forms import (
 
 
 # Register your models here.
+@admin.register(models.FieldOfStudy)
+class FieldOfStudyAdmin(admin.ModelAdmin[models.FieldOfStudy]):
+    search_fields = ("name",)
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
 @admin.register(models.Institution)
 class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
     search_fields = ("name",)
@@ -29,7 +37,7 @@ class QualificationInline(admin.StackedInline[models.Qualification, models.Emplo
     form = QualificationForm
     can_delete = True
     extra = 0
-    autocomplete_fields = ["institution"]
+    autocomplete_fields = ["institution", "field_of_study"]
 
 
 class EmploymentGradeInline(
@@ -69,6 +77,7 @@ class AdditionalDegreeInline(
     model = models.AdditionalDegree
     extra = 0
     can_delete = True
+    autocomplete_fields = ["institution", "field_of_study"]
 
 
 class TrainingCertificationInline(
@@ -77,6 +86,7 @@ class TrainingCertificationInline(
     model = models.TrainingCertification
     extra = 0
     can_delete = True
+    autocomplete_fields = ["institution"]
 
 
 @admin.register(models.Employee)

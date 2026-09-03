@@ -217,6 +217,78 @@ class Institution(models.Model):
         verbose_name_plural = _("مؤسسات")
 
 
+class FieldOfStudy(models.Model):
+    class FieldChoices(models.TextChoices):
+        EMPTY = "", _("لا يوجد مجال")
+        # === 1. MEDICAL & HEALTH SECTOR ===
+        HUMAN_MEDICINE = "MED_HUMAN", _("Human Medicine - الطب البشري")
+        DENTISTRY = "MED_DENT", _("Dentistry - طب وجراحة الفم والأسنان")
+        PHARMACY = "MED_PHARM", _("Pharmacy - الصيدلة")
+        PHYSICAL_THERAPY = "MED_PHYSTH", _("Physical Therapy - العلاج الطبيعي")
+        NURSING = "MED_NURS", _("Nursing - التمريض")
+        APPLIED_HEALTH = "MED_APPLIED", _(
+            "Applied Health Sciences - تكنولوجيا العلوم الصحية التطبيقية"
+        )
+
+        # === 2. ENGINEERING & TECHNOLOGY SECTOR ===
+        ENGINEERING = "ENG_MAIN", _("Engineering - الهندسة")
+        COMPUTERS_AI = "TECH_COMP_AI", _(
+            "Computers, Information & AI - الحاسبات والمعلومات والذكاء الاصطناعي"
+        )
+        TECHNOLOGICAL_UNI = "TECH_UNI", _(
+            "Technological Universities - الجامعات التكنولوجية"
+        )
+
+        # === 3. SCIENCE & AGRICULTURE SECTOR ===
+        BASIC_SCIENCES = "SCI_BASIC", _("Basic Sciences - العلوم الأساسية")
+        AGRICULTURE = "SCI_AGRI", _("Agriculture - الزراعة")
+        FISHERIES = "SCI_FISH", _("Fisheries & Aquaculture - الثروة السمكية والمصايد")
+        VETERINARY = "SCI_VET", _("Veterinary Medicine - الطب البيطري")
+
+        # === 4. HUMANITIES, ARTS & LANGUAGES SECTOR ===
+        ARTS_HUMANITIES = "ART_HUMAN", _("Arts & Humanities - الآداب")
+        LANGUAGES_TRANSLATION = "ART_LANG", _(
+            "Languages & Translation - الألسن واللغات والترجمة"
+        )
+        ARCHAEOLOGY = "ART_ARCH", _("Archaeology - الآثار")
+
+        # === 5. SOCIAL, ADMINISTRATIVE & LEGAL SCIENCES ===
+        COMMERCE_BUSINESS = "SOC_COMMERCE", _(
+            "Commerce & Business Administration - التجارة وإدارة الأعمال"
+        )
+        LAW_SHARIA = "SOC_LAW", _("Law & Sharia - الحقوق والشريعة والقانون")
+        ECONOMICS_POLSCI = "SOC_ECON_POL", _(
+            "Economics & Political Science - الاقتصاد والعلوم السياسية"
+        )
+        MASS_COMMUNICATION = "SOC_MEDIA", _("Mass Communication & Media - الإعلام")
+
+        # === 6. CREATIVE ARTS & DESIGN SECTOR ===
+        FINE_ARTS = "CRE_FINE", _("Fine Arts - الفنون الجميلة")
+        APPLIED_ARTS = "CRE_APPLIED", _("Applied Arts - الفنون التطبيقية")
+        ART_MUSIC_EDUCATION = "CRE_EDU", _(
+            "Art & Music Education - التربية الموسيقية والفنية"
+        )
+
+        # === 7. OTHER SPECIALIZED SECTORS ===
+        EDUCATION = "SPEC_EDU", _("Education (Teacher Prep) - التربية")
+        TOURISM_HOTELS = "SPEC_TOUR", _("Tourism & Hotels - السياحة والفنادق")
+        PHYSICAL_EDUCATION = "SPEC_SPORTS", _("Physical Education - التربية الرياضية")
+
+    name = models.CharField(
+        choices=FieldChoices,
+        verbose_name=_("اسم المجال"),
+        blank=True,
+        default=FieldChoices.EMPTY,
+    )
+
+    def __str__(self) -> str:
+        return self.get_name_display()
+
+    class Meta:
+        verbose_name = _("مجال دراسة")
+        verbose_name_plural = _("مجالات الدراسة")
+
+
 class Qualification(models.Model):
     class QualificationChoices(models.TextChoices):
         # المؤهلات العالية
@@ -257,8 +329,8 @@ class Qualification(models.Model):
         choices=QualificationChoices.choices, verbose_name=_("اسم المؤهل")
     )
 
-    field_of_study = models.CharField(
-        max_length=255, verbose_name=_("مجال الدراسة"), blank=True, default=""
+    field_of_study = models.OneToOneField(
+        to=FieldOfStudy, verbose_name=_("مجال الدراسة"), on_delete=models.PROTECT
     )
 
     def __str__(self) -> str:
@@ -309,7 +381,9 @@ class AdditionalDegree(models.Model):
         fellowship = "fellowship", _("زمالة")
 
     name = models.CharField(choices=DegreeChoices.choices, verbose_name=_("الدرجة"))
-    field_of_study = models.CharField(max_length=255, verbose_name=_("مجال الدراسة"))
+    field_of_study = models.OneToOneField(
+        to=FieldOfStudy, verbose_name=_("مجال الدراسة"), on_delete=models.PROTECT
+    )
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     institution = models.ForeignKey(
         to=Institution, related_name="additional_degrees", on_delete=models.CASCADE
@@ -329,7 +403,9 @@ class AdditionalDegree(models.Model):
 class TrainingCertification(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
-    institution = models.CharField(max_length=255, verbose_name=_("مكان الحصول عليها"))
+    institution = models.OneToOneField(
+        to=Institution, verbose_name=_("مكان الحصول عليها"), on_delete=models.PROTECT
+    )
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="training_certifications"
     )

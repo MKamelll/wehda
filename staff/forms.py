@@ -44,14 +44,26 @@ class QualificationForm(forms.ModelForm[Qualification]):
             "PREPARATORY_SCHOOL",
         ]
 
-        if name and name in no_field_of_study and field_of_study:
+        if (
+            name
+            and name in no_field_of_study
+            and field_of_study
+            and field_of_study.name
+        ):
             self.add_error(
                 "field_of_study",
                 _("لا يمكن تحديد تخصص لشهادة الثانوية العامة أو الأزهرية"),
             )
 
-        if name and name not in no_field_of_study and not field_of_study:
-            self.add_error("field_of_study", _("هذا الحقل مطلوب للمؤهلات العليا"))
+        if (
+            name
+            and name not in no_field_of_study
+            and field_of_study
+            and not field_of_study.name
+        ):
+            self.add_error(
+                "field_of_study", _("لا يمكن اختيار لايوجد مجال للمؤهلات العليا")
+            )
 
         return clean_data
 
