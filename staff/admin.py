@@ -5,10 +5,33 @@ from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
 from staff import models
-from staff.forms import EmploymentGradeFormSet, SecondedRecordFormSet, SpecialityFormSet
+from staff.forms import (
+    EmploymentGradeFormSet,
+    QualificationForm,
+    QualificationFormSet,
+    SecondedRecordFormSet,
+    SpecialityFormSet,
+)
 
 
 # Register your models here.
+@admin.register(models.Institution)
+class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
+    search_fields = ("name",)
+
+    def has_module_permission(self, _request: HttpRequest) -> bool:
+        return False
+
+
+class QualificationInline(admin.StackedInline[models.Qualification, models.Employee]):
+    model = models.Qualification
+    formset = QualificationFormSet
+    form = QualificationForm
+    can_delete = True
+    extra = 0
+    autocomplete_fields = ["institution"]
+
+
 class EmploymentGradeInline(
     admin.StackedInline[models.EmploymentGrade, models.Employee]
 ):
@@ -64,6 +87,7 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
 
     search_fields = ("name", "national_id", "addon_tasks__name")
     inlines = [
+        QualificationInline,
         EmploymentGradeInline,
         SpecialityInline,
         SecondedRecordInline,

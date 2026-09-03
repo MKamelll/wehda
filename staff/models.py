@@ -1,6 +1,7 @@
 from __future__ import annotations
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.forms import ValidationError
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -209,30 +210,59 @@ class Institution(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
 
     def __str__(self) -> str:
-        return f"{self.name} {self.kind}"
+        return f"{self.get_kind_display()} {self.name}"
 
     class Meta:
         verbose_name = _("مؤسسة")
         verbose_name_plural = _("مؤسسات")
 
 
-class Degree(models.Model):
-    employee = models.ForeignKey(
-        to=Employee, on_delete=models.CASCADE, related_name="degrees"
+class Qualification(models.Model):
+    class QualificationChoices(models.TextChoices):
+        # المؤهلات العالية
+        BACHELOR = "BACHELOR", _("بكالوريوس")
+        LICENTIATE = "LICENTIATE", _("ليسانس")
+        PROFESSIONAL_DEGREE = "PROFESSIONAL_DEGREE", _("بكالوريوس/ليسانس مهني")
+
+        # المؤهلات فوق المتوسطة
+        UPPER_INTERMEDIATE_TECHNICAL = "UPPER_INTERMEDIATE_TECHNICAL", _(
+            "دبلوم معهد فني فوق متوسط"
+        )
+        UPPER_INTERMEDIATE_ADMIN = "UPPER_INTERMEDIATE_ADMIN", _(
+            "دبلوم معهد إداري/سياحي فوق متوسط"
+        )
+
+        # المؤهلات المتوسطة
+        HIGH_SCHOOL = "HIGH_SCHOOL", _("ثانوية عامة")
+        AZHAR_HIGH_SCHOOL = "AZHAR_HIGH_SCHOOL", _("ثانوية أزهري")
+        TECHNICAL_DIPLOMA_3YR = "TECHNICAL_DIPLOMA_3YR", _("دبلوم فني 3 سنوات")
+
+        # المؤهلات أقل من متوسطة
+        PREPARATORY_SCHOOL = "PREPARATORY_SCHOOL", _("شهادة إعدادية")
+        TECHNICAL_DIPLOMA_5YR = "TECHNICAL_DIPLOMA_5YR", _("دبلوم فني متقدم 5 سنوات")
+
+    employee = models.OneToOneField(
+        to=Employee, on_delete=models.CASCADE, related_name="qualification"
     )
-    year = models.PositiveIntegerField(
-        verbose_name="السنة",
-        blank=True,
-        null=True,
-        validators=[MaxValueValidator(9999)],
+    date_of_certification = models.DateField(
+        verbose_name="تاريخ الحصول عليها", blank=True, null=True
     )
     institution = models.ForeignKey(
-        to=Institution, on_delete=models.PROTECT, related_name="degrees"
+        to=Institution,
+        on_delete=models.PROTECT,
+        related_name="qualifications",
+        verbose_name=_("المؤسسة"),
     )
-    name = models.CharField(max_length=255, verbose_name=_("اسم المؤهل"))
+    name = models.CharField(
+        choices=QualificationChoices.choices, verbose_name=_("اسم المؤهل")
+    )
+
+    field_of_study = models.CharField(
+        max_length=255, verbose_name=_("مجال الدراسة"), blank=True, default=""
+    )
 
     def __str__(self) -> str:
-        return self.name
+        return self.get_name_display()
 
     class Meta:
         verbose_name = _("مؤهل أساسي")
