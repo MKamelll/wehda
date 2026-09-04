@@ -41,7 +41,9 @@ class Employee(models.Model):
 
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
     job_title = models.CharField(
-        choices=JobTitlesChoices.choices, verbose_name=_("الوظيفة")
+        default=JobTitlesChoices.DOCTOR,
+        choices=JobTitlesChoices.choices,
+        verbose_name=_("الوظيفة"),
     )
     national_id = models.CharField(max_length=14, verbose_name=_("الرقم القومي"))
     phone_number = PhoneNumberField(region="EG", verbose_name=_("رقم الهاتف"))
@@ -185,7 +187,11 @@ class EmploymentGrade(models.Model):
         DEGREE_1 = "G1", _("الدرجة الأولى")
         DEGREE_K = "K", _("درجة كبير")
 
-    name = models.CharField(choices=GradeChoices.choices, verbose_name=_("اسم الدرجة"))
+    name = models.CharField(
+        choices=GradeChoices.choices,
+        default=GradeChoices.DEGREE_3,
+        verbose_name=_("اسم الدرجة"),
+    )
     date = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="employment_grades"
@@ -206,7 +212,11 @@ class Institution(models.Model):
         SCHOOL = "sch", _("مدرسة")
         INSTITUTION = "ini", _("معهد")
 
-    kind = models.CharField(choices=InstitutionChoices.choices, verbose_name=_("النوع"))
+    kind = models.CharField(
+        default=InstitutionChoices.UNIVERSITY,
+        choices=InstitutionChoices.choices,
+        verbose_name=_("النوع"),
+    )
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
 
     def __str__(self) -> str:
@@ -219,7 +229,6 @@ class Institution(models.Model):
 
 class FieldOfStudy(models.Model):
     class FieldChoices(models.TextChoices):
-        EMPTY = "", _("لا يوجد مجال")
         # === 1. MEDICAL & HEALTH SECTOR ===
         HUMAN_MEDICINE = "MED_HUMAN", _("Human Medicine - الطب البشري")
         DENTISTRY = "MED_DENT", _("Dentistry - طب وجراحة الفم والأسنان")
@@ -273,12 +282,12 @@ class FieldOfStudy(models.Model):
         EDUCATION = "SPEC_EDU", _("Education (Teacher Prep) - التربية")
         TOURISM_HOTELS = "SPEC_TOUR", _("Tourism & Hotels - السياحة والفنادق")
         PHYSICAL_EDUCATION = "SPEC_SPORTS", _("Physical Education - التربية الرياضية")
+        OTHER = "OTHER", _("أخري")
 
     name = models.CharField(
         choices=FieldChoices,
         verbose_name=_("اسم المجال"),
-        blank=True,
-        default=FieldChoices.EMPTY,
+        default=FieldChoices.HUMAN_MEDICINE,
     )
 
     def __str__(self) -> str:
@@ -326,7 +335,9 @@ class Qualification(models.Model):
         verbose_name=_("المؤسسة"),
     )
     name = models.CharField(
-        choices=QualificationChoices.choices, verbose_name=_("اسم المؤهل")
+        default=QualificationChoices.BACHELOR,
+        choices=QualificationChoices.choices,
+        verbose_name=_("اسم المؤهل"),
     )
 
     field_of_study = models.OneToOneField(
@@ -380,7 +391,11 @@ class AdditionalDegree(models.Model):
         PHD = "phd", _("دكتوراه")
         fellowship = "fellowship", _("زمالة")
 
-    name = models.CharField(choices=DegreeChoices.choices, verbose_name=_("الدرجة"))
+    name = models.CharField(
+        default=DegreeChoices.DIPLOMA,
+        choices=DegreeChoices.choices,
+        verbose_name=_("الدرجة"),
+    )
     field_of_study = models.OneToOneField(
         to=FieldOfStudy, verbose_name=_("مجال الدراسة"), on_delete=models.PROTECT
     )
