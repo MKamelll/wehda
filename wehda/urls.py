@@ -23,5 +23,5 @@ admin.site.site_title = "Wehda"
 admin.site.index_title = "Dashboard"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("", admin.site.urls),
 ]
