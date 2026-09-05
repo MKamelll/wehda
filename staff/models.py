@@ -1,5 +1,6 @@
 from __future__ import annotations
-from django.core.validators import MaxValueValidator
+import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -98,7 +99,7 @@ class Employee(models.Model):
         verbose_name_plural = _("موظفين")
 
 
-class Speciality(models.Model):
+class DoctorDetails(models.Model):
     class MedicalSpecialtyChoices(models.TextChoices):
         # --- Internal Medicine & General ---
         GENERAL_PRACTITIONER = "GP", _("General Practitioner (طبيب عام)")
@@ -146,21 +147,16 @@ class Speciality(models.Model):
         ANESTHESIOLOGIST = "ANES", _("Anesthesiologist (طبيب التخدير والعناية المركزة)")
         PSYCHIATRIST = "PSYCH", _("Psychiatrist (طبيب نفسي)")
 
-    employee = models.OneToOneField(
-        to=Employee, related_name="speciality", on_delete=models.CASCADE
+    employee = models.ForeignKey(
+        to=Employee, on_delete=models.CASCADE, related_name="doctor_details"
     )
-    name = models.CharField(
-        choices=MedicalSpecialtyChoices.choices,
-        verbose_name=_("اسم التخصص"),
-        default=MedicalSpecialtyChoices.GENERAL_PRACTITIONER,
+    speciality = models.CharField(
+        choices=MedicalSpecialtyChoices.choices, verbose_name=_("التخصص")
     )
-
-    def __str__(self) -> str:
-        return f"{self.name}"
 
     class Meta:
-        verbose_name = _("تخصص الطبيب البشري")
-        verbose_name_plural = _("تخصصات الأطباء البشريين")
+        verbose_name = _("تفاصيل طبيب بشري")
+        verbose_name_plural = _("تفاصيل أطباء بشري")
 
 
 class AddonTask(models.Model):
@@ -325,8 +321,14 @@ class Qualification(models.Model):
     employee = models.OneToOneField(
         to=Employee, on_delete=models.CASCADE, related_name="qualification"
     )
-    date_of_certification = models.DateField(
-        verbose_name="تاريخ الحصول عليها", blank=True, null=True
+    year = models.PositiveIntegerField(
+        verbose_name=_("سنة التخرج"),
+        validators=[
+            MinValueValidator(1900),
+            MaxValueValidator(datetime.date.today().year + 10),
+        ],
+        null=True,
+        blank=True,
     )
     institution = models.ForeignKey(
         to=Institution,

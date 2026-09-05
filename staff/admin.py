@@ -6,11 +6,11 @@ from django.utils.translation import gettext_lazy as _
 
 from staff import models
 from staff.forms import (
+    DoctorDetailsFormSet,
     EmploymentGradeFormSet,
     QualificationForm,
     QualificationFormSet,
     SecondedRecordFormSet,
-    SpecialityFormSet,
 )
 
 
@@ -31,6 +31,14 @@ class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
         return False
 
 
+class DoctorDetailsInline(admin.StackedInline[models.DoctorDetails, models.Employee]):
+    model = models.DoctorDetails
+    formset = DoctorDetailsFormSet
+    can_delete = True
+    extra = 0
+    max_num = 1
+
+
 class QualificationInline(admin.StackedInline[models.Qualification, models.Employee]):
     model = models.Qualification
     formset = QualificationFormSet
@@ -47,14 +55,6 @@ class EmploymentGradeInline(
     formset = EmploymentGradeFormSet
     can_delete = True
     extra = 0
-
-
-class SpecialityInline(admin.StackedInline[models.Speciality, models.Employee]):
-    model = models.Speciality
-    formset = SpecialityFormSet
-    can_delete = True
-    extra = 0
-    verbose_name = _("التخصص للاطباء البشري")
 
 
 class AddonTaskInline(admin.StackedInline[models.AddonTask, models.Employee]):
@@ -93,13 +93,13 @@ class TrainingCertificationInline(
 class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
     list_display = ("name", "job_title", "appointment_type", "is_active")
 
-    list_filter = ("appointment_type", "speciality", "job_title")
+    list_filter = ("appointment_type", "job_title")
 
     search_fields = ("name", "national_id", "addon_tasks__name")
     inlines = [
         QualificationInline,
         EmploymentGradeInline,
-        SpecialityInline,
+        DoctorDetailsInline,
         SecondedRecordInline,
         AdditionalDegreeInline,
         TrainingCertificationInline,

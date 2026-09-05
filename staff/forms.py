@@ -1,10 +1,25 @@
+from pickle import FALSE
 from typing import Any
 
 from django import forms
 from django.forms import BaseInlineFormSet, ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from staff.models import EmploymentGrade, Qualification, SecondedRecord, Speciality
+from staff.models import DoctorDetails, EmploymentGrade, Qualification, SecondedRecord
+
+
+class DoctorDetailsFormSet(BaseInlineFormSet[DoctorDetails, Any]):
+    def clean(self):
+        super().clean()
+        job_title = self.instance.job_title
+        has_data = any(
+            form.cleaned_data and not form.cleaned_data.get("DELETE", False)
+            for form in self.forms
+        )
+        if job_title == "doctor" and not has_data:
+            raise ValidationError("يجب إضافة تفاصيل للطبيب البشري")
+        if job_title != "doctor" and has_data:
+            raise ValidationError("تفاصيل الطبيب خاصة بالبشري فقط")
 
 
 class SecondedRecordFormSet(BaseInlineFormSet[SecondedRecord, Any]):
@@ -88,19 +103,3 @@ class EmploymentGradeFormSet(BaseInlineFormSet[EmploymentGrade, Any]):
         )
         if not has_grade:
             raise ValidationError("يجب إضافة درجة وظيفية واحدة علي الأقل")
-
-
-class SpecialityFormSet(BaseInlineFormSet[Speciality, Any]):
-    def clean(self) -> None:
-        super().clean()
-        job_title = self.instance.job_title
-
-        has_speciality = any(
-            form.cleaned_data and not form.cleaned_data.get("DELETE", False)
-            for form in self.forms
-        )
-
-        if job_title == "doctor" and not has_speciality:
-            raise ValidationError("يجب إضافة تخصص للطبيب البشري")
-        if job_title != "doctor" and has_speciality:
-            raise ValidationError("التخصص للطبيب البشري فقط")
