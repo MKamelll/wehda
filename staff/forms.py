@@ -79,33 +79,6 @@ class QualificationForm(forms.ModelForm[Qualification]):
         if clean_data.get("DELETE"):
             return clean_data
 
-        no_field_of_study = [
-            "HIGH_SCHOOL",
-            "AZHAR_HIGH_SCHOOL",
-            "PREPARATORY_SCHOOL",
-        ]
-
-        if (
-            name
-            and name in no_field_of_study
-            and field_of_study
-            and field_of_study.name
-        ):
-            self.add_error(
-                "field_of_study",
-                _("لا يمكن تحديد تخصص لشهادة الثانوية العامة أو الأزهرية"),
-            )
-
-        if (
-            name
-            and name not in no_field_of_study
-            and field_of_study
-            and not field_of_study.name
-        ):
-            self.add_error(
-                "field_of_study", _("لا يمكن اختيار لايوجد مجال للمؤهلات العليا")
-            )
-
         return clean_data
 
 
@@ -118,6 +91,24 @@ class QualificationFormSet(BaseInlineFormSet[Qualification, Any]):
         )
         if not has_qualification:
             raise ValidationError("يجب إضافة مؤهل أساسي للموظف")
+
+        no_field_of_study = [
+            "HIGH_SCHOOL",
+            "AZHAR_HIGH_SCHOOL",
+            "PREPARATORY_SCHOOL",
+        ]
+
+        for form in self.forms:
+            name = form.cleaned_data.get("name")
+            field_of_study = form.cleaned_data.get("field_of_study")
+
+            if name and name in no_field_of_study and field_of_study:
+                raise ValidationError(
+                    _("لا يمكن تحديد تخصص لشهادة الثانوية العامة أو الأزهرية")
+                )
+
+            if name and name not in no_field_of_study and not field_of_study:
+                raise ValidationError(_("يجب اختيار مجال الدراسة"))
 
 
 class EmploymentGradeFormSet(BaseInlineFormSet[EmploymentGrade, Any]):

@@ -246,7 +246,7 @@ class Institution(models.Model):
         verbose_name_plural = _("مؤسسات")
 
 
-class FieldOfStudy(models.Model):
+class Qualification(models.Model):
     class FieldChoices(models.TextChoices):
         # === 1. MEDICAL & HEALTH SECTOR ===
         HUMAN_MEDICINE = "MED_HUMAN", _("Human Medicine - الطب البشري")
@@ -303,21 +303,6 @@ class FieldOfStudy(models.Model):
         PHYSICAL_EDUCATION = "SPEC_SPORTS", _("Physical Education - التربية الرياضية")
         OTHER = "OTHER", _("أخري")
 
-    name = models.CharField(
-        choices=FieldChoices,
-        verbose_name=_("اسم المجال"),
-        default=FieldChoices.HUMAN_MEDICINE,
-    )
-
-    def __str__(self) -> str:
-        return self.get_name_display()
-
-    class Meta:
-        verbose_name = _("مجال دراسة")
-        verbose_name_plural = _("مجالات الدراسة")
-
-
-class Qualification(models.Model):
     class QualificationChoices(models.TextChoices):
         # المؤهلات العالية
         BACHELOR = "BACHELOR", _("بكالوريوس")
@@ -365,8 +350,8 @@ class Qualification(models.Model):
         verbose_name=_("اسم المؤهل"),
     )
 
-    field_of_study = models.OneToOneField(
-        to=FieldOfStudy, verbose_name=_("مجال الدراسة"), on_delete=models.PROTECT
+    field_of_study = models.CharField(
+        choices=FieldChoices.choices, verbose_name=_("مجال الدراسة")
     )
 
     def __str__(self) -> str:
@@ -421,9 +406,6 @@ class AdditionalDegree(models.Model):
         choices=DegreeChoices.choices,
         verbose_name=_("الدرجة"),
     )
-    field_of_study = models.OneToOneField(
-        to=FieldOfStudy, verbose_name=_("مجال الدراسة"), on_delete=models.PROTECT
-    )
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     institution = models.ForeignKey(
         to=Institution, related_name="additional_degrees", on_delete=models.CASCADE
@@ -441,7 +423,7 @@ class AdditionalDegree(models.Model):
 
 
 class TrainingCertification(models.Model):
-    name = models.CharField(max_length=255, verbose_name=_("الاسم"))
+    name = models.CharField(max_length=255, verbose_name=_("اسم الدورة التدريبية"))
     date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
     institution = models.OneToOneField(
         to=Institution, verbose_name=_("مكان الحصول عليها"), on_delete=models.PROTECT
