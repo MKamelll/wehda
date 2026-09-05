@@ -211,7 +211,7 @@ class EmploymentGrade(models.Model):
         default=GradeChoices.DEGREE_3,
         verbose_name=_("اسم الدرجة"),
     )
-    date = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
+    date = models.DateField(verbose_name=_("تاريخ الحصول عليها"), null=True, blank=True)
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="employment_grades"
     )
