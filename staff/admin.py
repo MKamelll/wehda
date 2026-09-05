@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from staff import models
 from staff.forms import (
+    AddressForm,
+    AddressFormSet,
     DoctorDetailsFormSet,
     EmploymentGradeFormSet,
     QualificationForm,
@@ -29,6 +31,14 @@ class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
 
     def has_module_permission(self, _request: HttpRequest) -> bool:
         return False
+
+
+class AddressInline(admin.StackedInline[models.Address, models.Employee]):
+    model = models.Address
+    formset = AddressFormSet
+    form = AddressForm
+    can_delete = True
+    extra = 0
 
 
 class DoctorDetailsInline(admin.StackedInline[models.DoctorDetails, models.Employee]):
@@ -97,6 +107,7 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
 
     search_fields = ("name", "national_id", "addon_tasks__name")
     inlines = [
+        AddressInline,
         QualificationInline,
         EmploymentGradeInline,
         DoctorDetailsInline,

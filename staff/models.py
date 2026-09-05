@@ -54,7 +54,7 @@ class Employee(models.Model):
     email = models.EmailField(
         verbose_name=_("البريد الالكتروني"), blank=True, null=True
     )
-    address = models.CharField(max_length=255, verbose_name=_("العنوان"))
+
     practice_license_number = models.CharField(
         max_length=255, verbose_name=_("رقم ترخيص مزاولة المهنة"), blank=True, null=True
     )
@@ -97,6 +97,26 @@ class Employee(models.Model):
     class Meta:
         verbose_name = _("موظف")
         verbose_name_plural = _("موظفين")
+
+
+class Address(models.Model):
+    employee = models.ForeignKey(
+        to=Employee, on_delete=models.CASCADE, related_name="addresses"
+    )
+    village = models.CharField(
+        max_length=255, verbose_name=_("مركز"), blank=True, default=""
+    )
+    city = models.CharField(max_length=255, verbose_name=_("مدينة"), default="دسوق")
+    governate = models.CharField(
+        max_length=255, verbose_name=_("محافظة"), default="كفر الشيخ"
+    )
+
+    def __str__(self) -> str:
+        return f"{self.village}, {self.city}, {self.governate}"
+
+    class Meta:
+        verbose_name = _("عنوان")
+        verbose_name_plural = _("عناوين")
 
 
 class DoctorDetails(models.Model):
@@ -153,6 +173,9 @@ class DoctorDetails(models.Model):
     speciality = models.CharField(
         choices=MedicalSpecialtyChoices.choices, verbose_name=_("التخصص")
     )
+
+    def __str__(self):
+        return f"{self.get_speciality_display()}"
 
     class Meta:
         verbose_name = _("تفاصيل طبيب بشري")
