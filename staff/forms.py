@@ -111,6 +111,15 @@ class QualificationFormSet(BaseInlineFormSet[Qualification, Any]):
                 raise ValidationError(_("يجب اختيار مجال الدراسة"))
 
 
+class EmploymentGradeForm(forms.ModelForm):
+    class Meta:
+        model = EmploymentGrade
+        fields = ("name", "date")
+
+    def has_changed(self):
+        return True
+
+
 class EmploymentGradeFormSet(BaseInlineFormSet[EmploymentGrade, Any]):
     def clean(self) -> None:
         super().clean()

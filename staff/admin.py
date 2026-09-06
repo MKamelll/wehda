@@ -9,6 +9,7 @@ from staff.forms import (
     AddressForm,
     AddressFormSet,
     DoctorDetailsFormSet,
+    EmploymentGradeForm,
     EmploymentGradeFormSet,
     QualificationForm,
     QualificationFormSet,
@@ -55,6 +56,7 @@ class EmploymentGradeInline(
 ):
     model = models.EmploymentGrade
     formset = EmploymentGradeFormSet
+    form = EmploymentGradeForm
     can_delete = True
     extra = 0
 
