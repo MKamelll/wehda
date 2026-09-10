@@ -8,6 +8,41 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 # Create your models here.
+class HealthUnit(models.Model):
+    HEALTH_ADMIN_CHOICES = [
+        (
+            _("كفر الشيخ"),
+            [
+                ("desouq", _("دسوق")),
+                ("kfs", _("كفر الشيخ")),
+                ("mtoubs", _("مطوبس")),
+                ("hamol", _("الحامول")),
+                ("sidi_salem", _("سيدي سالم")),
+                ("baltim", _("بلطيم")),
+                ("foah", _("فوه")),
+                ("kalin", _("قلين")),
+                ("ryad", _("الرياض")),
+                ("byala", _("بيلا")),
+                ("sidi_ghazi", _("سيدي غازي")),
+            ],
+        )
+    ]
+    name = models.CharField(_("الاسم"), max_length=255)
+    code = models.CharField(verbose_name=_("الكود"), max_length=255)
+    health_admin = models.CharField(
+        _("الإدارة الصحية"), max_length=255, choices=HEALTH_ADMIN_CHOICES
+    )
+    number_of_residents = models.PositiveIntegerField(_("عدد السكان"))
+    number_of_clinics = models.PositiveIntegerField(_("عدد العيادات"))
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = _("وحدة صحية")
+        verbose_name_plural = _("وحدات صحية")
+
+
 class Employee(models.Model):
     class ServiceStatusChoices(models.TextChoices):
         ACTIVE = "active", _("على رأس العمل")
@@ -81,6 +116,15 @@ class Employee(models.Model):
         default=AppointmentTypeChoices.BASIC,
     )
 
+    health_unit = models.ForeignKey(
+        to=HealthUnit,
+        verbose_name=_("الوحدة الصحية"),
+        on_delete=models.CASCADE,
+        related_name="employees",
+        null=True,
+        blank=True,
+    )
+
     @property
     def current_grade(self) -> EmploymentGrade | None:
         return self.employment_grades.order_by("-date").first()
@@ -101,7 +145,23 @@ class Employee(models.Model):
 
 class Address(models.Model):
     employee = models.ForeignKey(
-        to=Employee, on_delete=models.CASCADE, related_name="addresses"
+        to=Employee,
+        on_delete=models.CASCADE,
+        related_name="addresses",
+        verbose_name=_("عنوان الموظف"),
+        null=True,
+        blank=True,
+    )
+    health_unit = models.OneToOneField(
+        to=HealthUnit,
+        verbose_name=_("عنوان الوحدة"),
+        on_delete=models.CASCADE,
+        related_name="address",
+        null=True,
+        blank=True,
+    )
+    street = models.CharField(
+        verbose_name=_("شارع"), max_length=255, default="", blank=True
     )
     village = models.CharField(
         max_length=255, verbose_name=_("مركز"), blank=True, default=""

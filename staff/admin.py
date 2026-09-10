@@ -34,6 +34,21 @@ class AddressInline(admin.StackedInline[models.Address, models.Employee]):
     extra = 0
 
 
+@admin.register(models.HealthUnit)
+class HealthUnitAdmin(admin.ModelAdmin[models.HealthUnit]):
+    list_display = (
+        "name",
+        "code",
+        "health_admin",
+        "number_of_residents",
+        "number_of_clinics",
+    )
+
+    search_fields = ("name", "code", "health_admin")
+
+    inlines = [AddressInline]
+
+
 class DoctorDetailsInline(admin.StackedInline[models.DoctorDetails, models.Employee]):
     model = models.DoctorDetails
     formset = DoctorDetailsFormSet

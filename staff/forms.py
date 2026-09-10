@@ -17,7 +17,7 @@ from staff.models import (
 class AddressForm(forms.ModelForm[Address]):
     class Meta:
         model = Address
-        fields = ("village", "city", "governate")
+        fields = ("street", "village", "city", "governate")
 
     def has_changed(self):
         return True
