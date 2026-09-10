@@ -488,7 +488,7 @@ class TrainingCertification(models.Model):
     date_of_certification = models.DateField(
         verbose_name=_("تاريخ الحصول عليها"), blank=True, null=True
     )
-    institution = models.OneToOneField(
+    institution = models.ForeignKey(
         to=Institution,
         verbose_name=_("مكان الحصول عليها"),
         on_delete=models.PROTECT,
