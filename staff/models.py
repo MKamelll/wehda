@@ -290,6 +290,7 @@ class Institution(models.Model):
         UNIVERSITY = "uni", _("جامعة")
         SCHOOL = "sch", _("مدرسة")
         INSTITUTION = "ini", _("معهد")
+        TRAINING_CENTER = "center", _("مركز تدريب")
 
     kind = models.CharField(
         default=InstitutionChoices.UNIVERSITY,
@@ -484,9 +485,15 @@ class AdditionalDegree(models.Model):
 
 class TrainingCertification(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("اسم الدورة التدريبية"))
-    date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
+    date_of_certification = models.DateField(
+        verbose_name=_("تاريخ الحصول عليها"), blank=True, null=True
+    )
     institution = models.OneToOneField(
-        to=Institution, verbose_name=_("مكان الحصول عليها"), on_delete=models.PROTECT
+        to=Institution,
+        verbose_name=_("مكان الحصول عليها"),
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="training_certifications"
