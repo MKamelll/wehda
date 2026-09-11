@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Export</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm;
+        @top-right {
+          content: element(MultiLineHeader);
+          vertical-align: bottom;
+          padding-bottom: 10px;
+        }
+      }
+
+      .header-container {
+        position: running(MultiLineHeader);
+        direction: rtl;
+        text-align: right;
+        font-family: "Arial", sans-serif;
+        line-height: 1.4;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        direction: rtl;
+        text-align: right;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th, td {
+        border: 1px solid #999999;
+        padding: 10px;
+        text-align: right;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      h2 {
+        text-align: center;
+      }
+
+      .header {
+        font-size: 12pt; 
+        font-weight: bold;
+        color: #111111;
+      }
+
+      .phone-col {
+        direction: ltr !important;
+        text-align: right !important;
+        unicode-bidi: embed;
+      }
+
+      .empty {
+        text-align: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="header-container">
+      <div class="header">الإدارة الصحية بدسوق</div>
+      <div class="header">وحدة محلة أبو علي الصحية</div>
+    </div>
+    <h2>قـــوة وحـــدة طـــب الأســــرة بمحــلة أبو علي</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>الاسم</th>
+          <th>الرقم القومي</th>
+          <th>رقم التليفون</th>
+          <th>ملاحظـــــات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for employee in employees %}
+          <tr>
+            <td>{{ employee.name }}</td>
+            <td>{{ employee.national_id }}</td>
+            <td class="phone-col">{{ employee.phone_number }}</td>
+            <td></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" class="empty">لم يتم اختيار أي بيانات</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -1,8 +1,12 @@
+import io
 from typing import Any
 
 from django.contrib import admin
-from django.http import HttpRequest
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponse
+from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
+from weasyprint import HTML
 
 from staff import models
 from staff.forms import (
@@ -17,7 +21,25 @@ from staff.forms import (
 )
 
 
-# Register your models here.
+@admin.action(description="Export to PDF")
+def export_to_pdf(
+    model_admin: admin.ModelAdmin,
+    request: HttpRequest,
+    queryset: QuerySet[models.Employee],
+) -> HttpResponse:
+
+    html_string = render_to_string(
+        "staff/pdf_template.djhtml", context={"employees": queryset}
+    )
+
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+
+    return response
+
+
 @admin.register(models.Institution)
 class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
     search_fields = ("name",)
@@ -125,3 +147,4 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         TrainingCertificationInline,
         AddonTaskInline,
     ]
+    actions = [export_to_pdf]

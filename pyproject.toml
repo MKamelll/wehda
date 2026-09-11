@@ -4,12 +4,15 @@ version = "0.1.0"
 description = ""
 authors = [{ name = "Mina Kamel", email = "minallkamel@gmail.com" }]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<4"
 dependencies = [
     "django (>=6.1,<7.0)",
     "django-stubs (>=6.1.0,<7.0.0)",
     "django-stubs-ext (>=6.1.0,<7.0.0)",
     "django-phonenumber-field[phonenumbers] (>=8.5.0,<9.0.0)",
+    "arabic-reshaper (>=3.0.1,<4.0.0)",
+    "python-bidi (>=0.6.11,<0.7.0)",
+    "weasyprint (>=70.0,<71.0)",
 ]
 
 [tool.poetry]
