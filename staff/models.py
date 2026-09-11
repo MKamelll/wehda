@@ -75,17 +75,29 @@ class Employee(models.Model):
         BASIC = "b", _("أساسي")
         SECONDED = "s", _("انتداب")
 
-    name = models.CharField(max_length=255, verbose_name=_("الاسم"))
+    name = models.CharField(
+        max_length=255, verbose_name=_("الاسم"), help_text="الاسم رباعي علي الأقل"
+    )
     job_title = models.CharField(
         default=JobTitlesChoices.DOCTOR,
         choices=JobTitlesChoices.choices,
         verbose_name=_("الوظيفة"),
     )
-    national_id = models.CharField(max_length=14, verbose_name=_("الرقم القومي"))
-    phone_number = PhoneNumberField(region="EG", verbose_name=_("رقم الهاتف"))
-    birth_date = models.DateField(verbose_name=_("تاريخ الميلاد"))
-    job_start_date = models.DateField(verbose_name=_("تاريخ استلام العمل"))
-    first_hire_date = models.DateField(verbose_name=_("تاريخ أول تعيين"))
+    national_id = models.CharField(
+        max_length=14, verbose_name=_("الرقم القومي"), help_text="تأكد من كتابة 14 رقم"
+    )
+    phone_number = PhoneNumberField(
+        region="EG", verbose_name=_("رقم الهاتف"), help_text="تأكد من كتابة 11 رقم"
+    )
+    birth_date = models.DateField(
+        verbose_name=_("تاريخ الميلاد"), help_text="YYYY-MM-DD"
+    )
+    job_start_date = models.DateField(
+        verbose_name=_("تاريخ استلام العمل"), help_text="YYYY-MM-DD"
+    )
+    first_hire_date = models.DateField(
+        verbose_name=_("تاريخ أول تعيين"), help_text="YYYY-MM-DD"
+    )
     email = models.EmailField(
         verbose_name=_("البريد الالكتروني"), blank=True, null=True
     )
@@ -108,7 +120,10 @@ class Employee(models.Model):
         verbose_name=_("حالة الخدمة"),
     )
     end_of_service_date = models.DateField(
-        blank=True, null=True, verbose_name=_("تاريخ انتهاء الخدمة")
+        blank=True,
+        null=True,
+        verbose_name=_("تاريخ انتهاء الخدمة"),
+        help_text="YYYY-MM-DD",
     )
     appointment_type = models.CharField(
         choices=AppointmentTypeChoices.choices,
@@ -181,6 +196,7 @@ class Address(models.Model):
 
 class DoctorDetails(models.Model):
     class MedicalSpecialtyChoices(models.TextChoices):
+        DEFAULT = "", _("اختر")
         # --- Internal Medicine & General ---
         GENERAL_PRACTITIONER = "GP", _("General Practitioner (طبيب عام)")
         INTERNAL_MEDICINE = "INT_MED", _(
@@ -231,7 +247,9 @@ class DoctorDetails(models.Model):
         to=Employee, on_delete=models.CASCADE, related_name="doctor_details"
     )
     speciality = models.CharField(
-        choices=MedicalSpecialtyChoices.choices, verbose_name=_("التخصص")
+        choices=MedicalSpecialtyChoices.choices,
+        verbose_name=_("التخصص"),
+        help_text="خاص بالطبيب البشري فقط",
     )
 
     def __str__(self):
@@ -271,7 +289,12 @@ class EmploymentGrade(models.Model):
         default=GradeChoices.DEGREE_3,
         verbose_name=_("اسم الدرجة"),
     )
-    date = models.DateField(verbose_name=_("تاريخ الحصول عليها"), null=True, blank=True)
+    date = models.DateField(
+        verbose_name=_("تاريخ الحصول عليها"),
+        null=True,
+        blank=True,
+        help_text="YYYY-MM-DD",
+    )
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="employment_grades"
     )
@@ -309,6 +332,7 @@ class Institution(models.Model):
 
 class Qualification(models.Model):
     class FieldChoices(models.TextChoices):
+        DEFAULT = "", _("اختر")
         # === 1. MEDICAL & HEALTH SECTOR ===
         HUMAN_MEDICINE = "MED_HUMAN", _("Human Medicine - الطب البشري")
         DENTISTRY = "MED_DENT", _("Dentistry - طب وجراحة الفم والأسنان")
@@ -390,12 +414,10 @@ class Qualification(models.Model):
     employee = models.OneToOneField(
         to=Employee, on_delete=models.CASCADE, related_name="qualification"
     )
-    year = models.PositiveIntegerField(
+    year = models.CharField(
         verbose_name=_("سنة التخرج"),
-        validators=[
-            MinValueValidator(1900),
-            MaxValueValidator(datetime.date.today().year + 10),
-        ],
+        choices=[("", _("اختر"))]
+        + [(str(i), str(i)) for i in range(1900, datetime.date.today().year + 1)],
         null=True,
         blank=True,
     )
@@ -427,9 +449,14 @@ class SecondedRecord(models.Model):
     original_workplace = models.CharField(
         max_length=255, verbose_name=_("مكان العمل الأصلي")
     )
-    start_date = models.DateField(verbose_name=_("تاريخ بدأ الانتداب"))
+    start_date = models.DateField(
+        verbose_name=_("تاريخ بدأ الانتداب"), help_text="YYYY-MM-DD"
+    )
     end_date = models.DateField(
-        verbose_name=_("تاريخ انتهاء الانتداب"), null=True, blank=True
+        verbose_name=_("تاريخ انتهاء الانتداب"),
+        null=True,
+        blank=True,
+        help_text="YYYY-MM-DD",
     )
     employee = models.ForeignKey(
         to=Employee, on_delete=models.CASCADE, related_name="secondment_history"
@@ -467,7 +494,9 @@ class AdditionalDegree(models.Model):
         choices=DegreeChoices.choices,
         verbose_name=_("الدرجة"),
     )
-    date_of_certification = models.DateField(verbose_name=_("تاريخ الحصول عليها"))
+    date_of_certification = models.DateField(
+        verbose_name=_("تاريخ الحصول عليها"), help_text="YYYY-MM-DD"
+    )
     institution = models.ForeignKey(
         to=Institution, related_name="additional_degrees", on_delete=models.CASCADE
     )
@@ -486,7 +515,10 @@ class AdditionalDegree(models.Model):
 class TrainingCertification(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("اسم الدورة التدريبية"))
     date_of_certification = models.DateField(
-        verbose_name=_("تاريخ الحصول عليها"), blank=True, null=True
+        verbose_name=_("تاريخ الحصول عليها"),
+        blank=True,
+        null=True,
+        help_text="YYYY-MM-DD",
     )
     institution = models.ForeignKey(
         to=Institution,
