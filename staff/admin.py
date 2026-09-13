@@ -7,7 +7,7 @@ from django.http import FileResponse, HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from weasyprint import HTML
 
 from staff import models
@@ -131,24 +131,9 @@ def workforce_xlsx(
     ]
     worksheet.append(headers)
 
-    grey_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
-
-    for cell in worksheet[6]:
-        cell.fill = grey_fill
-        cell.font = Font(bold=True)
-
-    yellow_fill = PatternFill(
-        start_color="FFFF00", end_color="FFFF00", fill_type="solid"
-    )
-
     worksheet.merge_cells(
         start_row=5, end_row=5, start_column=1, end_column=len(headers)
     )
-
-    for cell in worksheet[5]:
-        cell.fill = yellow_fill
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
 
     for i in queryset:
         current_secondment = i.current_secondment
@@ -185,7 +170,7 @@ def workforce_xlsx(
             str(i.birth_date),
             str(i.job_start_date),
             str(i.first_hire_date),
-            str(i.email),
+            str(i.email or ""),
             str(address),
             additional_degrees_names,
             additional_degrees_dates,
@@ -195,6 +180,31 @@ def workforce_xlsx(
             i.practice_license_number,
         ]
         worksheet.append(row)
+
+    font = Font(name="Arial", size=12, bold=True, italic=False, color="000000")
+    grey_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+    yellow_fill = PatternFill(
+        start_color="FFFF00", end_color="FFFF00", fill_type="solid"
+    )
+    border_side = Side(border_style="thin", color="000000")
+    full_border = Border(
+        left=border_side, right=border_side, top=border_side, bottom=border_side
+    )
+
+    for row in worksheet:
+        for cell in row:
+            cell.font = font
+            if cell.row == 5:
+                cell.fill = yellow_fill
+            if cell.row >= 5 and cell.column <= len(headers):
+                cell.border = full_border
+            if cell.row == 6:
+                cell.fill = grey_fill
+                cell.alignment = Alignment(
+                    vertical="center", horizontal="center", wrap_text=True
+                )
+            else:
+                cell.alignment = Alignment(vertical="center", horizontal="center")
 
     workbook.save(buffer)
     buffer.seek(0)
