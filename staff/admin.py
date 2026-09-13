@@ -3,9 +3,11 @@ from typing import Any
 
 from django.contrib import admin
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import FileResponse, HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
 from weasyprint import HTML
 
 from staff import models
@@ -79,6 +81,125 @@ def workforce_code_pdf(
     response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
 
     return response
+
+
+@admin.action(description="xlsx العاملين بالوحدة")
+def workforce_xlsx(
+    model_admin: admin.ModelAdmin,
+    request: HttpRequest,
+    queryset: QuerySet[models.Employee],
+) -> FileResponse:
+
+    unit_name = queryset[0].health_unit.name
+    health_admin = queryset[0].health_unit.get_health_admin_display()
+
+    buffer = io.BytesIO()
+
+    workbook = Workbook()
+    worksheet = workbook.active
+
+    worksheet.title = "العاملين"
+    worksheet.views.sheetView[0].rightToLeft = True
+    worksheet.append([f"الإدارة الصحية ب{health_admin}"])
+    worksheet.append([f"قسم بيانات رعاية أساسية"])
+    worksheet.append([f"وحدة {unit_name} الصحية"])
+    worksheet.append([])
+    worksheet.append([f"بيان العاملين بوحدة/ {unit_name}"])
+
+    headers = [
+        "الاسم",
+        "أساسي/انتداب",
+        "مكان العمل الأصلي للانتداب",
+        "الدرجة",
+        "الرقم القومي",
+        "الوظيفة",
+        "تخصص/للأطباء البشري",
+        "سنة التخرج",
+        "جامعة تخرج",
+        "رقم التليفون",
+        "تاريخ الميلاد",
+        "تاريخ استلام العمل داخل الوحدة",
+        "تاريخ تعيين (أول تعيين)",
+        "البريد الالكتروني",
+        "العنوان (محل الإقامة)",
+        "درجه علميه(دبلومه-ماجستير-دكتوراه-زماله)",
+        "تاريخ الحصول عليه",
+        "الجامعه",
+        "تدريبات التي تم الحصول عليها(دورات)",
+        "مكان الحصول علي الدورات التدريبيه",
+        "رقم ترخيص مزاوله مهنه",
+    ]
+    worksheet.append(headers)
+
+    grey_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+
+    for cell in worksheet[6]:
+        cell.fill = grey_fill
+        cell.font = Font(bold=True)
+
+    yellow_fill = PatternFill(
+        start_color="FFFF00", end_color="FFFF00", fill_type="solid"
+    )
+
+    worksheet.merge_cells(
+        start_row=5, end_row=5, start_column=1, end_column=len(headers)
+    )
+
+    for cell in worksheet[5]:
+        cell.fill = yellow_fill
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for i in queryset:
+        current_secondment = i.current_secondment
+        ow = current_secondment.original_workplace if current_secondment else ""
+        grade = i.current_grade.get_name_display().split(" ")[1]
+        doctor = i.doctor_details.first()
+        speciality = doctor.get_speciality_display() if doctor else ""
+        qualification = i.qualification
+        year = str(qualification.year) if qualification else ""
+        institution = qualification.institution
+        address = i.addresses.last()
+        additional_degrees = i.additional_degrees.select_related("institution")
+        additional_degrees_names = "+".join([j.name for j in additional_degrees])
+        additional_degrees_dates = "+".join(
+            [str(j.date_of_certification) for j in additional_degrees]
+        )
+        additional_degrees_institutions = "+".join(
+            [str(j.institution) for j in additional_degrees]
+        )
+        trainings = i.training_certifications.select_related("institution")
+        trainings_names = "+".join([j.name for j in trainings])
+        trainings_institutions = "+".join([str(j.institution or "") for j in trainings])
+        row = [
+            str(i.name),
+            str(i.get_appointment_type_display()),
+            ow,
+            grade,
+            str(i.national_id),
+            str(i.get_job_title_display()),
+            speciality,
+            year,
+            str(institution),
+            str(i.phone_number),
+            str(i.birth_date),
+            str(i.job_start_date),
+            str(i.first_hire_date),
+            str(i.email),
+            str(address),
+            additional_degrees_names,
+            additional_degrees_dates,
+            additional_degrees_institutions,
+            trainings_names,
+            trainings_institutions,
+            i.practice_license_number,
+        ]
+        worksheet.append(row)
+
+    workbook.save(buffer)
+    buffer.seek(0)
+
+    return FileResponse(buffer, as_attachment=True, filename="العاملين.xlsx")
 
 
 @admin.register(models.Institution)
@@ -188,4 +309,4 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         TrainingCertificationInline,
         AddonTaskInline,
     ]
-    actions = [workforce_pdf, workforce_code_pdf]
+    actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx]

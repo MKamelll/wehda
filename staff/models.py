@@ -139,8 +139,8 @@ class Employee(models.Model):
     )
 
     @property
-    def current_grade(self) -> EmploymentGrade | None:
-        return self.employment_grades.order_by("-date").first()
+    def current_grade(self) -> EmploymentGrade:
+        return self.employment_grades.order_by("-date")[0]
 
     @property
     def current_secondment(self) -> SecondedRecord | None:
@@ -522,6 +522,7 @@ class TrainingCertification(models.Model):
         to=Institution,
         verbose_name=_("مكان الحصول عليها"),
         on_delete=models.PROTECT,
+        related_name="training_certifications",
         null=True,
         blank=True,
     )
