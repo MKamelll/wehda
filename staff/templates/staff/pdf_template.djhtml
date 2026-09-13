@@ -6,7 +6,7 @@
     <title>PDF Export</title>
     <style>
       @page {
-        size: A4;
+        size: {{ page_size }};
         margin: 20mm;
         @top-right {
           content: element(MultiLineHeader);
@@ -69,17 +69,14 @@
   </head>
   <body>
     <div class="header-container">
-      <div class="header">الإدارة الصحية بدسوق</div>
-      <div class="header">وحدة محلة أبو علي الصحية</div>
+      <div class="header">الإدارة الصحية ب{{ health_admin }}</div>
+      <div class="header">وحدة {{ unit_name }} الصحية</div>
     </div>
-    <h2>قـــوة وحـــدة طـــب الأســــرة بمحــلة أبو علي</h2>
+    <h2>قـــوة وحـــدة طـــب الأســــرة ب{{ unit_name }}</h2>
     <table>
       <thead>
         <tr>
-          <th>الاسم</th>
-          <th>الرقم القومي</th>
-          <th>رقم التليفون</th>
-          <th>ملاحظـــــات</th>
+          {% for header in headers %}<th>{{ header }}</th>{% endfor %}
         </tr>
       </thead>
       <tbody>
@@ -88,7 +85,7 @@
             <td>{{ employee.name }}</td>
             <td>{{ employee.national_id }}</td>
             <td class="phone-col">{{ employee.phone_number }}</td>
-            <td></td>
+            {% for i in empty_cols %}<td></td>{% endfor %}
           </tr>
         {% empty %}
           <tr>

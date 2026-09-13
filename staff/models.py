@@ -136,8 +136,6 @@ class Employee(models.Model):
         verbose_name=_("الوحدة الصحية"),
         on_delete=models.CASCADE,
         related_name="employees",
-        null=True,
-        blank=True,
     )
 
     @property

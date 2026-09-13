@@ -21,15 +21,56 @@ from staff.forms import (
 )
 
 
-@admin.action(description="Export to PDF")
-def export_to_pdf(
+@admin.action(description="PDF قوة الوحدة")
+def workforce_pdf(
     model_admin: admin.ModelAdmin,
     request: HttpRequest,
     queryset: QuerySet[models.Employee],
 ) -> HttpResponse:
 
+    unit_name = queryset[0].health_unit.name
+    health_admin = queryset[0].health_unit.get_health_admin_display()
+    headers = ["الاسم", "الرقم القومي", "رقم التليفون", "ملاحظـــات"]
     html_string = render_to_string(
-        "staff/pdf_template.djhtml", context={"employees": queryset}
+        "staff/pdf_template.djhtml",
+        context={
+            "employees": queryset,
+            "headers": headers,
+            "unit_name": unit_name,
+            "health_admin": health_admin,
+            "empty_cols": range(1),
+            "page_size": "A4 portrait",
+        },
+    )
+
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+
+    return response
+
+
+@admin.action(description="PDF قوة الوحدة برقم الصرف")
+def workforce_code_pdf(
+    model_admin: admin.ModelAdmin,
+    request: HttpRequest,
+    queryset: QuerySet[models.Employee],
+) -> HttpResponse:
+
+    unit_name = queryset[0].health_unit.name
+    health_admin = queryset[0].health_unit.get_health_admin_display()
+    headers = ["الاسم", "الرقم القومي", "رقم التليفون", "رقم الصرف", "ملاحظـــات"]
+    html_string = render_to_string(
+        "staff/pdf_template.djhtml",
+        context={
+            "employees": queryset,
+            "headers": headers,
+            "unit_name": unit_name,
+            "health_admin": health_admin,
+            "empty_cols": range(2),
+            "page_size": "A4 portrait",
+        },
     )
 
     pdf_file = HTML(string=html_string).write_pdf()
@@ -147,4 +188,4 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         TrainingCertificationInline,
         AddonTaskInline,
     ]
-    actions = [export_to_pdf]
+    actions = [workforce_pdf, workforce_code_pdf]
