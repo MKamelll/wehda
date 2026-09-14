@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Export</title>
+    <style>
+      @page {
+        size: {{ page_size }};
+        margin: 30mm 8mm 8mm 8mm;
+        @top-right {
+          content: element(MultiLineHeader);
+        }
+      }
+
+      .header-container {
+        position: running(MultiLineHeader);
+        direction: rtl;
+        text-align: right;
+        font-family: "Arial", sans-serif;
+        line-height: 1.4;
+        vertical-align: bottom;
+      }
+
+      .table-page {
+        page-break-after: always;
+      }
+
+      .table-page:last-child {
+        page-break-after: avoid;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        font-weight: bold;
+        direction: rtl;
+        text-align: right;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th, td {
+        border: 1px solid #999999;
+        padding: 8px 4px;
+        text-align: center;
+        word-wrap: break-word;
+        font-size: 14pt;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      h2 {
+        text-align: center;
+      }
+
+      .header {
+        font-size: 12pt; 
+        font-weight: bold;
+        color: #111111;
+      }
+
+      .phone-col {
+        direction: ltr !important;
+        text-align: right !important;
+        unicode-bidi: embed;
+      }
+
+      .empty {
+        text-align: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="header-container">
+      <div class="header">الإدارة الصحية ب{{ health_admin }}</div>
+      <div class="header">قسم بيانات رعاية أساسية</div>
+      <div class="header">وحدة {{ unit_name }} الصحية</div>
+    </div>
+    {% for table in tables %}
+      <div class="table-page">
+        <h2>بيان العاملين بوحدة {{ unit_name }}</h2>
+        <table>
+          <thead>
+            <tr>
+              {% for header in table.headers %}<th>{{ header }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in table.rows %}
+              <tr>
+                {% for data in row %}<td>{{ data }}</td>{% endfor %}
+                {% for i in empty_cols %}<td></td>{% endfor %}
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="empty">لم يتم اختيار أي بيانات</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  </body>
+</html>

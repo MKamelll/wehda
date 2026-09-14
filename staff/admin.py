@@ -212,6 +212,167 @@ def workforce_xlsx(
     return FileResponse(buffer, as_attachment=True, filename="العاملين.xlsx")
 
 
+@admin.action(description="PDF العاملين بالوحدة")
+def workforce_full_pdf(
+    model_admin: admin.ModelAdmin,
+    request: HttpRequest,
+    queryset: QuerySet[models.Employee],
+) -> HttpResponse:
+
+    unit_name = queryset[0].health_unit.name
+    health_admin = queryset[0].health_unit.get_health_admin_display()
+    tables: list[dict[str, list[str] | list[list[str]]]] = [
+        {
+            "headers": [
+                "الاسم",
+                "أساسي/انتداب",
+                "مكان العمل الأصلي للانتداب",
+                "الدرجة",
+                "الرقم القومي",
+            ],
+            "rows": [],
+        },
+        {
+            "headers": [
+                "الاسم",
+                "الوظيفة",
+                "تخصص/للأطباء البشري",
+                "سنة التخرج",
+                "جامعة تخرج",
+                "رقم التليفون",
+            ],
+            "rows": [],
+        },
+        {
+            "headers": [
+                "الاسم",
+                "تاريخ الميلاد",
+                "تاريخ استلام العمل داخل الوحدة",
+                "تاريخ تعيين (أول تعيين)",
+                "البريد الالكتروني",
+            ],
+            "rows": [],
+        },
+        {
+            "headers": [
+                "الاسم",
+                "العنوان (محل الإقامة)",
+                "درجه علميه(دبلومه-ماجستير-دكتوراه-زماله)",
+                "تاريخ الحصول عليه",
+                "الجامعه",
+            ],
+            "rows": [],
+        },
+        {
+            "headers": [
+                "الاسم",
+                "تدريبات التي تم الحصول عليها(دورات)",
+                "مكان الحصول علي الدورات التدريبيه",
+                "رقم ترخيص مزاوله مهنه",
+            ],
+            "rows": [],
+        },
+    ]
+
+    table_1_rows = []
+    for i in queryset:
+        row = []
+        row.append(str(i.name))
+        row.append(i.get_appointment_type_display())
+        current_secondment = i.current_secondment
+        ow = current_secondment.original_workplace if current_secondment else ""
+        row.append(ow)
+        grade = i.current_grade.get_name_display().split(" ")[1]
+        row.append(grade)
+        row.append(str(i.national_id))
+        table_1_rows.append(row)
+
+    tables[0]["rows"] = table_1_rows
+
+    table_2_rows = []
+    for i in queryset:
+        row = []
+        row.append(str(i.name))
+        row.append(i.get_job_title_display())
+        doctor = i.doctor_details.first()
+        speciality = doctor.get_speciality_display() if doctor else ""
+        row.append(speciality)
+        qualification = i.qualification
+        year = str(qualification.year) if qualification else ""
+        row.append(year)
+        institution = qualification.institution
+        row.append(str(institution))
+        row.append(str(i.phone_number))
+        table_2_rows.append(row)
+
+    tables[1]["rows"] = table_2_rows
+
+    table_3_rows = []
+    for i in queryset:
+        row = []
+        row.append(str(i.name))
+        row.append(str(i.birth_date))
+        row.append(str(i.job_start_date))
+        row.append(str(i.first_hire_date))
+        row.append(i.email or "")
+        table_3_rows.append(row)
+
+    tables[2]["rows"] = table_3_rows
+
+    table_4_rows = []
+    for i in queryset:
+        row = []
+        row.append(str(i.name))
+        address = i.addresses.last()
+        row.append(str(address))
+        additional_degrees = i.additional_degrees.select_related("institution")
+        additional_degrees_names = "+".join([j.name for j in additional_degrees])
+        additional_degrees_dates = "+".join(
+            [str(j.date_of_certification) for j in additional_degrees]
+        )
+        additional_degrees_institutions = "+".join(
+            [str(j.institution) for j in additional_degrees]
+        )
+        row.append(additional_degrees_names)
+        row.append(additional_degrees_dates)
+        row.append(additional_degrees_institutions)
+        table_4_rows.append(row)
+
+    tables[3]["rows"] = table_4_rows
+
+    table_5_rows = []
+    for i in queryset:
+        row = []
+        row.append(str(i.name))
+        trainings = i.training_certifications.select_related("institution")
+        trainings_names = "+".join([j.name for j in trainings])
+        trainings_institutions = "+".join([str(j.institution or "") for j in trainings])
+        row.append(trainings_names)
+        row.append(trainings_institutions)
+        row.append(i.practice_license_number or "")
+        table_5_rows.append(row)
+
+    tables[4]["rows"] = table_5_rows
+
+    html_string = render_to_string(
+        "staff/pdf_full_template.djhtml",
+        context={
+            "tables": tables,
+            "unit_name": unit_name,
+            "health_admin": health_admin,
+            "empty_cols": range(0),
+            "page_size": "A4 landscape",
+        },
+    )
+
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+
+    return response
+
+
 @admin.register(models.Institution)
 class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
     search_fields = ("name",)
@@ -319,4 +480,4 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         TrainingCertificationInline,
         AddonTaskInline,
     ]
-    actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx]
+    actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx, workforce_full_pdf]
