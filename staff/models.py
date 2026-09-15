@@ -28,19 +28,25 @@ class HealthUnit(models.Model):
         )
     ]
     name = models.CharField(_("الاسم"), max_length=255)
-    code = models.CharField(verbose_name=_("الكود"), max_length=255)
+    code = models.CharField(
+        verbose_name=_("الكود"), max_length=255, blank=True, default=""
+    )
     health_admin = models.CharField(
         _("الإدارة الصحية"), max_length=255, choices=HEALTH_ADMIN_CHOICES
     )
-    number_of_residents = models.PositiveIntegerField(_("عدد السكان"))
-    number_of_clinics = models.PositiveIntegerField(_("عدد العيادات"))
+    number_of_residents = models.PositiveIntegerField(
+        _("عدد السكان"), blank=True, null=True
+    )
+    number_of_clinics = models.PositiveIntegerField(
+        _("عدد العيادات"), blank=True, null=True
+    )
 
     def __str__(self):
         return f"{self.name}"
 
     class Meta:
-        verbose_name = _("وحدة صحية")
-        verbose_name_plural = _("وحدات صحية")
+        verbose_name = _("مؤسسة صحية")
+        verbose_name_plural = _("مؤسسات صحية")
 
 
 class Employee(models.Model):
@@ -55,7 +61,10 @@ class Employee(models.Model):
         DOCTOR = "doctor", _("طبيب بشري")
         DENTIST = "dentist", _("طبيب أسنان")
         PHARMACIST = "pharmacist", _("صيدلي")
-        NURSE = "nurse", _("ممرض/ة")
+        NURSING_TECHNICIAN = "nursing_technician", _("فني تمريض")
+        NURSING_SPECIALIST = "nursing_specialist", _("أخصائي تمريض")
+        SENIOR_NURSING_SPECIALIST = "senior_nursing_specialist", _("أخصائي أول تمريض")
+        NURSE_CONSULTANT = "nurse_consultant", _("استشاري تمريض")
         HEALTH_INSPECTOR = "health_inspector", _("مراقب صحي")
         HEALTH_REGISTER = "health_register", _("كاتب صحة")
         LAB_TECHNICIAN = "lab_technician", _("فني معمل")
@@ -64,6 +73,10 @@ class Employee(models.Model):
         GENERAL_REGISTER = "general_register", _("كاتب")
         GENERAL_WORKER = "general_worker", _("عامل")
         ENGINEERING_TECHNICIAN = "engineering_technician", _("فني هندسي")
+        HEAD_NURSE = "head_nurse", _("رئيس التمريض")
+        HEAD_PHARMACIST = "head_pharmacist", _("الصيدلي الأول")
+        HEAD_OF_UNIT = "head_of_unit", _("مدير الوحدة")
+        HEAD_DENTIST = "head_dentist", _("مدير الأسنان")
 
     class MaritalStatus(models.TextChoices):
         SINGLE = "SINGLE", _("أعزب / عزباء")
@@ -185,7 +198,9 @@ class Address(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"{self.village}, {self.city}, {self.governate}"
+        s = f"{self.street}, " if self.street else ""
+        v = f"{self.village}, " if self.village else ""
+        return f"{s}{v}{self.city}, {self.governate}"
 
     class Meta:
         verbose_name = _("عنوان")
@@ -319,8 +334,18 @@ class Institution(models.Model):
         verbose_name=_("النوع"),
     )
     name = models.CharField(max_length=255, verbose_name=_("الاسم"))
+    address = models.ForeignKey(
+        to=Address,
+        related_name="institutions",
+        verbose_name="العنوان",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self) -> str:
+        if self.address:
+            return f"{self.get_kind_display()} {self.name} ب{self.address.city}"
         return f"{self.get_kind_display()} {self.name}"
 
     class Meta:
@@ -444,8 +469,11 @@ class Qualification(models.Model):
 
 
 class SecondedRecord(models.Model):
-    original_workplace = models.CharField(
-        max_length=255, verbose_name=_("مكان العمل الأصلي")
+    original_workplace = models.ForeignKey(
+        to=HealthUnit,
+        on_delete=models.PROTECT,
+        verbose_name=_("مكان العمل الأصلي"),
+        related_name="secondment_history",
     )
     start_date = models.DateField(
         verbose_name=_("تاريخ بدأ الانتداب"), help_text="YYYY-MM-DD"

@@ -465,9 +465,13 @@ class TrainingCertificationInline(
 
 @admin.register(models.Employee)
 class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
-    list_display = ("name", "job_title", "appointment_type", "is_active")
+    list_display = (
+        "name",
+        "job_title",
+        "appointment_type",
+    )
 
-    list_filter = ("appointment_type", "job_title")
+    list_filter = ("appointment_type", "job_title", "is_active")
 
     search_fields = ("name", "national_id", "addon_tasks__name")
     inlines = [
