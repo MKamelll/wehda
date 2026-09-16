@@ -8,6 +8,31 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 # Create your models here.
+class Address(models.Model):
+    street = models.CharField(
+        verbose_name=_("شارع"), max_length=255, default="", blank=True
+    )
+    village = models.CharField(
+        max_length=255, verbose_name=_("مركز"), blank=True, default=""
+    )
+    city = models.CharField(
+        max_length=255, verbose_name=_("مدينة"), default="دسوق", blank=True
+    )
+    governate = models.CharField(
+        max_length=255, verbose_name=_("محافظة"), default="كفر الشيخ"
+    )
+
+    def __str__(self) -> str:
+        s = f"{self.street}, " if self.street else ""
+        v = f"{self.village}, " if self.village else ""
+        c = f"{self.city}, " if self.city else ""
+        return f"{s}{v}{c}, {self.governate}"
+
+    class Meta:
+        verbose_name = _("عنوان")
+        verbose_name_plural = _("عناوين")
+
+
 class HealthUnit(models.Model):
     HEALTH_ADMIN_CHOICES = [
         (
@@ -27,7 +52,17 @@ class HealthUnit(models.Model):
             ],
         )
     ]
-    name = models.CharField(_("الاسم"), max_length=255)
+
+    class HealthUnitKindChoices(models.TextChoices):
+        UNIT = "unit", _("وحدة")
+        HOSPITAL = "hospital", _("مستشفي")
+
+    kind = models.CharField(
+        verbose_name=_("النوع"),
+        choices=HealthUnitKindChoices,
+        default=HealthUnitKindChoices.UNIT,
+    )
+    name = models.CharField(verbose_name=_("الاسم"), max_length=255)
     code = models.CharField(
         verbose_name=_("الكود"), max_length=255, blank=True, default=""
     )
@@ -40,9 +75,16 @@ class HealthUnit(models.Model):
     number_of_clinics = models.PositiveIntegerField(
         _("عدد العيادات"), blank=True, null=True
     )
+    address = models.ForeignKey(
+        to=Address,
+        related_name="health_units",
+        on_delete=models.PROTECT,
+        verbose_name=_("العنوان"),
+        null=True,
+    )
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.get_kind_display()} {self.name}"
 
     class Meta:
         verbose_name = _("مؤسسة صحية")
@@ -151,6 +193,14 @@ class Employee(models.Model):
         related_name="employees",
     )
 
+    address = models.ForeignKey(
+        to=Address,
+        related_name="employees",
+        on_delete=models.PROTECT,
+        verbose_name=_("العنوان"),
+        null=True,
+    )
+
     @property
     def current_grade(self) -> EmploymentGrade:
         return self.employment_grades.order_by("-date")[0]
@@ -167,44 +217,6 @@ class Employee(models.Model):
     class Meta:
         verbose_name = _("موظف")
         verbose_name_plural = _("موظفين")
-
-
-class Address(models.Model):
-    employee = models.ForeignKey(
-        to=Employee,
-        on_delete=models.CASCADE,
-        related_name="addresses",
-        verbose_name=_("عنوان الموظف"),
-        null=True,
-        blank=True,
-    )
-    health_unit = models.OneToOneField(
-        to=HealthUnit,
-        verbose_name=_("عنوان الوحدة"),
-        on_delete=models.CASCADE,
-        related_name="address",
-        null=True,
-        blank=True,
-    )
-    street = models.CharField(
-        verbose_name=_("شارع"), max_length=255, default="", blank=True
-    )
-    village = models.CharField(
-        max_length=255, verbose_name=_("مركز"), blank=True, default=""
-    )
-    city = models.CharField(max_length=255, verbose_name=_("مدينة"), default="دسوق")
-    governate = models.CharField(
-        max_length=255, verbose_name=_("محافظة"), default="كفر الشيخ"
-    )
-
-    def __str__(self) -> str:
-        s = f"{self.street}, " if self.street else ""
-        v = f"{self.village}, " if self.village else ""
-        return f"{s}{v}{self.city}, {self.governate}"
-
-    class Meta:
-        verbose_name = _("عنوان")
-        verbose_name_plural = _("عناوين")
 
 
 class DoctorDetails(models.Model):
@@ -340,12 +352,17 @@ class Institution(models.Model):
         verbose_name="العنوان",
         on_delete=models.PROTECT,
         null=True,
-        blank=True,
     )
 
     def __str__(self) -> str:
         if self.address:
-            return f"{self.get_kind_display()} {self.name} ب{self.address.city}"
+            if self.address.city:
+                return f"{self.get_kind_display()} {self.name} ب{self.address.city}"
+            else:
+                return (
+                    f"{self.get_kind_display()} {self.name} ب{self.address.governate}"
+                )
+
         return f"{self.get_kind_display()} {self.name}"
 
     class Meta:

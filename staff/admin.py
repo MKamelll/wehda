@@ -12,8 +12,6 @@ from weasyprint import HTML
 
 from staff import models
 from staff.forms import (
-    AddressForm,
-    AddressFormSet,
     DoctorDetailsFormSet,
     EmploymentGradeForm,
     EmploymentGradeFormSet,
@@ -144,7 +142,7 @@ def workforce_xlsx(
         qualification = i.qualification
         year = str(qualification.year) if qualification else ""
         institution = qualification.institution
-        address = i.addresses.last()
+        address = i.address
         additional_degrees = i.additional_degrees.select_related("institution")
         additional_degrees_names = "+".join([j.name for j in additional_degrees])
         additional_degrees_dates = "+".join(
@@ -280,7 +278,7 @@ def workforce_full_pdf(
         row.append(str(i.name))
         row.append(i.get_appointment_type_display())
         current_secondment = i.current_secondment
-        ow = current_secondment.original_workplace if current_secondment else ""
+        ow = current_secondment.original_workplace.name if current_secondment else ""
         row.append(ow)
         grade = i.current_grade.get_name_display().split(" ")[1]
         row.append(grade)
@@ -323,7 +321,7 @@ def workforce_full_pdf(
     for i in queryset:
         row = []
         row.append(str(i.name))
-        address = i.addresses.last()
+        address = i.address
         row.append(str(address))
         additional_degrees = i.additional_degrees.select_related("institution")
         additional_degrees_names = "+".join([j.name for j in additional_degrees])
@@ -381,12 +379,12 @@ class InstituitionAdmin(admin.ModelAdmin[models.Institution]):
         return False
 
 
-class AddressInline(admin.StackedInline[models.Address, models.Employee]):
-    model = models.Address
-    formset = AddressFormSet
-    form = AddressForm
-    can_delete = True
-    extra = 0
+@admin.register(models.Address)
+class AddressAdmin(admin.ModelAdmin[models.Address]):
+    search_fields = ("street", "village", "city", "governate")
+
+    def has_module_permission(self, _request: HttpRequest) -> bool:
+        return False
 
 
 @admin.register(models.HealthUnit)
@@ -400,8 +398,7 @@ class HealthUnitAdmin(admin.ModelAdmin[models.HealthUnit]):
     )
 
     search_fields = ("name", "code", "health_admin")
-
-    inlines = [AddressInline]
+    autocomplete_fields = ("address",)
 
 
 class DoctorDetailsInline(admin.StackedInline[models.DoctorDetails, models.Employee]):
@@ -474,8 +471,8 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
     list_filter = ("appointment_type", "job_title", "is_active")
 
     search_fields = ("name", "national_id", "addon_tasks__name")
+    autocomplete_fields = ("address",)
     inlines = [
-        AddressInline,
         QualificationInline,
         EmploymentGradeInline,
         DoctorDetailsInline,

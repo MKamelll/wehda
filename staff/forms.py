@@ -14,26 +14,6 @@ from staff.models import (
 )
 
 
-class AddressForm(forms.ModelForm[Address]):
-    class Meta:
-        model = Address
-        fields = ("street", "village", "city", "governate")
-
-    def has_changed(self):
-        return True
-
-
-class AddressFormSet(BaseInlineFormSet[Address, Any]):
-    def clean(self) -> None:
-        super().clean()
-        has_address = any(
-            form.cleaned_data and not form.cleaned_data.get("DELETE", False)
-            for form in self.forms
-        )
-        if not has_address:
-            raise ValidationError("يجب إضافة عنوان واحد علي الأقل")
-
-
 class DoctorDetailsFormSet(BaseInlineFormSet[DoctorDetails, Any]):
     def clean(self):
         super().clean()
