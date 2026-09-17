@@ -31,7 +31,7 @@ def workforce_pdf(
 
     unit_name = queryset[0].health_unit.name
     health_admin = queryset[0].health_unit.get_health_admin_display()
-    headers = ["الاسم", "الرقم القومي", "رقم التليفون", "ملاحظـــات"]
+    headers = ["الاسم", "الوظيفة", "الرقم القومي", "رقم التليفون", "ملاحظـــات"]
     html_string = render_to_string(
         "staff/pdf_template.djhtml",
         context={
@@ -61,7 +61,14 @@ def workforce_code_pdf(
 
     unit_name = queryset[0].health_unit.name
     health_admin = queryset[0].health_unit.get_health_admin_display()
-    headers = ["الاسم", "الرقم القومي", "رقم التليفون", "رقم الصرف", "ملاحظـــات"]
+    headers = [
+        "الاسم",
+        "الوظيفة",
+        "الرقم القومي",
+        "رقم التليفون",
+        "رقم الصرف",
+        "ملاحظـــات",
+    ]
     html_string = render_to_string(
         "staff/pdf_template.djhtml",
         context={

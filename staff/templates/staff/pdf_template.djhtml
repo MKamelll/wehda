@@ -25,6 +25,8 @@
 
       body {
         font-family: "Arial", sans-serif;
+        font-size: 10pt;
+        font-weight: bold;
         direction: rtl;
         text-align: right;
       }
@@ -37,7 +39,7 @@
 
       th, td {
         border: 1px solid #999999;
-        padding: 10px;
+        padding: 8px;
         text-align: right;
       }
 
@@ -83,6 +85,7 @@
         {% for employee in employees %}
           <tr>
             <td>{{ employee.name }}</td>
+            <td>{{ employee.get_job_title_display }}</td>
             <td>{{ employee.national_id }}</td>
             <td class="phone-col">{{ employee.phone_number }}</td>
             {% for i in empty_cols %}<td></td>{% endfor %}
