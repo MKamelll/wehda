@@ -26,7 +26,7 @@ class Address(models.Model):
         s = f"{self.street}, " if self.street else ""
         v = f"{self.village}, " if self.village else ""
         c = f"{self.city}, " if self.city else ""
-        return f"{s}{v}{c}, {self.governate}"
+        return f"{s}{v}{c}{self.governate}"
 
     class Meta:
         verbose_name = _("عنوان")
