@@ -355,14 +355,6 @@ class Institution(models.Model):
     )
 
     def __str__(self) -> str:
-        if self.address:
-            if self.address.city:
-                return f"{self.get_kind_display()} {self.name} ب{self.address.city}"
-            else:
-                return (
-                    f"{self.get_kind_display()} {self.name} ب{self.address.governate}"
-                )
-
         return f"{self.get_kind_display()} {self.name}"
 
     class Meta:
