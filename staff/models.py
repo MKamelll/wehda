@@ -425,27 +425,15 @@ class Qualification(models.Model):
         OTHER = "OTHER", _("أخري")
 
     class QualificationChoices(models.TextChoices):
-        # المؤهلات العالية
         BACHELOR = "BACHELOR", _("بكالوريوس")
         LICENTIATE = "LICENTIATE", _("ليسانس")
         PROFESSIONAL_DEGREE = "PROFESSIONAL_DEGREE", _("بكالوريوس/ليسانس مهني")
 
-        # المؤهلات فوق المتوسطة
-        UPPER_INTERMEDIATE_TECHNICAL = "UPPER_INTERMEDIATE_TECHNICAL", _(
-            "دبلوم معهد فني فوق متوسط"
-        )
-        UPPER_INTERMEDIATE_ADMIN = "UPPER_INTERMEDIATE_ADMIN", _(
-            "دبلوم معهد إداري/سياحي فوق متوسط"
-        )
-
-        # المؤهلات المتوسطة
         HIGH_SCHOOL = "HIGH_SCHOOL", _("ثانوية عامة")
         AZHAR_HIGH_SCHOOL = "AZHAR_HIGH_SCHOOL", _("ثانوية أزهري")
         TECHNICAL_DIPLOMA_3YR = "TECHNICAL_DIPLOMA_3YR", _("دبلوم فني 3 سنوات")
 
-        # المؤهلات أقل من متوسطة
         PREPARATORY_SCHOOL = "PREPARATORY_SCHOOL", _("شهادة إعدادية")
-        TECHNICAL_DIPLOMA_5YR = "TECHNICAL_DIPLOMA_5YR", _("دبلوم فني متقدم 5 سنوات")
         CAN_READ = "CAN_READ", _("محو الأمية")
 
     employee = models.OneToOneField(
