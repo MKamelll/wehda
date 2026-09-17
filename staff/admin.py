@@ -2,7 +2,8 @@ import io
 from typing import Any
 
 from django.contrib import admin
-from django.db.models import QuerySet
+from django.db.models import Case, QuerySet, Value, When
+from django.db.models import IntegerField
 from django.http import FileResponse, HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
@@ -135,14 +136,14 @@ def workforce_xlsx(
 
     for i in queryset:
         current_secondment = i.current_secondment
-        ow = current_secondment.original_workplace if current_secondment else ""
+        ow = str(current_secondment.original_workplace) if current_secondment else ""
         grade = i.current_grade.get_name_display().split(" ")[1]
         doctor = i.doctor_details.first()
         speciality = doctor.get_speciality_display() if doctor else ""
         qualification = i.qualification
-        year = str(qualification.year) if qualification else ""
-        institution = qualification.institution
-        address = i.address
+        year = str(qualification.year or "") if qualification else ""
+        institution = qualification.institution or ""
+        address = i.address or ""
         additional_degrees = i.additional_degrees.select_related("institution")
         additional_degrees_names = "+".join([j.name for j in additional_degrees])
         additional_degrees_dates = "+".join(
@@ -166,8 +167,8 @@ def workforce_xlsx(
             str(institution),
             str(i.phone_number),
             str(i.birth_date),
-            str(i.job_start_date),
-            str(i.first_hire_date),
+            str(i.job_start_date or ""),
+            str(i.first_hire_date or ""),
             str(i.email or ""),
             str(address),
             additional_degrees_names,
@@ -278,7 +279,11 @@ def workforce_full_pdf(
         row.append(str(i.name))
         row.append(i.get_appointment_type_display())
         current_secondment = i.current_secondment
-        ow = current_secondment.original_workplace.name if current_secondment else ""
+        ow = (
+            str(current_secondment.original_workplace or "")
+            if current_secondment
+            else ""
+        )
         row.append(ow)
         grade = i.current_grade.get_name_display().split(" ")[1]
         row.append(grade)
@@ -296,9 +301,9 @@ def workforce_full_pdf(
         speciality = doctor.get_speciality_display() if doctor else ""
         row.append(speciality)
         qualification = i.qualification
-        year = str(qualification.year) if qualification else ""
+        year = str(qualification.year or "") if qualification else ""
         row.append(year)
-        institution = qualification.institution
+        institution = qualification.institution or ""
         row.append(str(institution))
         row.append(str(i.phone_number))
         table_2_rows.append(row)
@@ -310,8 +315,8 @@ def workforce_full_pdf(
         row = []
         row.append(str(i.name))
         row.append(str(i.birth_date))
-        row.append(str(i.job_start_date))
-        row.append(str(i.first_hire_date))
+        row.append(str(i.job_start_date or ""))
+        row.append(str(i.first_hire_date or ""))
         row.append(i.email or "")
         table_3_rows.append(row)
 
@@ -321,7 +326,7 @@ def workforce_full_pdf(
     for i in queryset:
         row = []
         row.append(str(i.name))
-        address = i.address
+        address = i.address or ""
         row.append(str(address))
         additional_degrees = i.additional_degrees.select_related("institution")
         additional_degrees_names = "+".join([j.name for j in additional_degrees])
@@ -464,7 +469,7 @@ class TrainingCertificationInline(
 class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
     list_display = (
         "name",
-        "job_title",
+        "sorted_job_title",
         "appointment_type",
     )
 
@@ -482,3 +487,74 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         AddonTaskInline,
     ]
     actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx, workforce_full_pdf]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        queryset = queryset.annotate(
+            job_group_weight=Case(
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEAD_OF_UNIT,
+                    then=Value(1),
+                ),
+                When(job_title=models.Employee.JobTitlesChoices.DOCTOR, then=Value(2)),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEAD_DENTIST,
+                    then=Value(3),
+                ),
+                When(job_title=models.Employee.JobTitlesChoices.DENTIST, then=Value(4)),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEAD_PHARMACIST,
+                    then=Value(5),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.PHARMACIST, then=Value(6)
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEAD_NURSE, then=Value(7)
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.NURSE_CONSULTANT,
+                    then=Value(8),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.SENIOR_NURSING_SPECIALIST,
+                    then=Value(9),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.NURSING_SPECIALIST,
+                    then=Value(10),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.NURSING_TECHNICIAN,
+                    then=Value(11),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEALTH_INSPECTOR,
+                    then=Value(12),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.LAB_TECHNICIAN,
+                    then=Value(13),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.HEALTH_REGISTER,
+                    then=Value(14),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.GENERAL_REGISTER,
+                    then=Value(15),
+                ),
+                When(
+                    job_title=models.Employee.JobTitlesChoices.COMMUNITY_HEALTH_WORKER,
+                    then=Value(16),
+                ),
+                default=Value(99),
+                output_field=IntegerField(),
+            )
+        )
+        return queryset
+
+    @admin.display(ordering="job_group_weight", description="الوظيفة")
+    def sorted_job_title(self, obj: models.Employee):
+        return obj.get_job_title_display()

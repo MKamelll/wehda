@@ -50,7 +50,8 @@ class HealthUnit(models.Model):
                 ("byala", _("بيلا")),
                 ("sidi_ghazi", _("سيدي غازي")),
             ],
-        )
+        ),
+        (_("القاهرة"), [("bab_elsheria", _("باب الشعرية"))]),
     ]
 
     class HealthUnitKindChoices(models.TextChoices):
@@ -148,10 +149,13 @@ class Employee(models.Model):
         verbose_name=_("تاريخ الميلاد"), help_text="YYYY-MM-DD"
     )
     job_start_date = models.DateField(
-        verbose_name=_("تاريخ استلام العمل"), help_text="YYYY-MM-DD"
+        verbose_name=_("تاريخ استلام العمل"),
+        help_text="YYYY-MM-DD",
+        null=True,
+        blank=True,
     )
     first_hire_date = models.DateField(
-        verbose_name=_("تاريخ أول تعيين"), help_text="YYYY-MM-DD"
+        verbose_name=_("تاريخ أول تعيين"), help_text="YYYY-MM-DD", blank=True, null=True
     )
     email = models.EmailField(
         verbose_name=_("البريد الالكتروني"), blank=True, null=True
@@ -442,6 +446,7 @@ class Qualification(models.Model):
         # المؤهلات أقل من متوسطة
         PREPARATORY_SCHOOL = "PREPARATORY_SCHOOL", _("شهادة إعدادية")
         TECHNICAL_DIPLOMA_5YR = "TECHNICAL_DIPLOMA_5YR", _("دبلوم فني متقدم 5 سنوات")
+        CAN_READ = "CAN_READ", _("محو الأمية")
 
     employee = models.OneToOneField(
         to=Employee, on_delete=models.CASCADE, related_name="qualification"
@@ -458,6 +463,8 @@ class Qualification(models.Model):
         on_delete=models.PROTECT,
         related_name="qualifications",
         verbose_name=_("المؤسسة"),
+        null=True,
+        blank=True,
     )
     name = models.CharField(
         default=QualificationChoices.BACHELOR,
@@ -466,7 +473,7 @@ class Qualification(models.Model):
     )
 
     field_of_study = models.CharField(
-        choices=FieldChoices.choices, verbose_name=_("مجال الدراسة")
+        choices=FieldChoices.choices, verbose_name=_("مجال الدراسة"), blank=True
     )
 
     def __str__(self) -> str:

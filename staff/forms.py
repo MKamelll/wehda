@@ -76,6 +76,7 @@ class QualificationFormSet(BaseInlineFormSet[Qualification, Any]):
             "HIGH_SCHOOL",
             "AZHAR_HIGH_SCHOOL",
             "PREPARATORY_SCHOOL",
+            "CAN_READ",
         ]
 
         for form in self.forms:
