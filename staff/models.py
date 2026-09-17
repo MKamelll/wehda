@@ -431,7 +431,7 @@ class Qualification(models.Model):
 
         HIGH_SCHOOL = "HIGH_SCHOOL", _("ثانوية عامة")
         AZHAR_HIGH_SCHOOL = "AZHAR_HIGH_SCHOOL", _("ثانوية أزهري")
-        TECHNICAL_DIPLOMA_3YR = "TECHNICAL_DIPLOMA_3YR", _("دبلوم فني 3 سنوات")
+        TECHNICAL_DIPLOMA = "TECHNICAL_DIPLOMA", _("دبلوم فني")
 
         PREPARATORY_SCHOOL = "PREPARATORY_SCHOOL", _("شهادة إعدادية")
         CAN_READ = "CAN_READ", _("محو الأمية")
