@@ -86,6 +86,7 @@
           <tr>
             <td>{{ employee.name }}</td>
             <td>{{ employee.get_job_title_display }}</td>
+            <td>{{ employee.current_grade_short }}</td>
             <td>{{ employee.national_id }}</td>
             <td class="phone-col">{{ employee.phone_number }}</td>
             {% for i in empty_cols %}<td></td>{% endfor %}

@@ -210,6 +210,10 @@ class Employee(models.Model):
         return self.employment_grades.order_by("-date")[0]
 
     @property
+    def current_grade_short(self) -> str:
+        return str(self.current_grade).split(" ")[1]
+
+    @property
     def current_secondment(self) -> SecondedRecord | None:
         if self.appointment_type == "s":
             return self.secondment_history.filter(end_date__isnull=True).first()

@@ -6,6 +6,7 @@ from django.db.models import Case, QuerySet, Value, When
 from django.db.models import IntegerField
 from django.http import FileResponse, HttpRequest, HttpResponse
 from django.template.loader import render_to_string
+from django.utils.http import content_disposition_header
 from django.utils.translation import gettext_lazy as _
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -31,7 +32,14 @@ def workforce_pdf(
 
     unit_name = queryset[0].health_unit.name
     health_admin = queryset[0].health_unit.get_health_admin_display()
-    headers = ["الاسم", "الوظيفة", "الرقم القومي", "رقم التليفون", "ملاحظـــات"]
+    headers = [
+        "الاسم",
+        "الوظيفة",
+        "الدرجة",
+        "الرقم القومي",
+        "رقم التليفون",
+        "ملاحظـــات",
+    ]
     html_string = render_to_string(
         "staff/pdf_template.djhtml",
         context={
@@ -47,7 +55,9 @@ def workforce_pdf(
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+    response["Content-Disposition"] = (
+        content_disposition_header(as_attachment=False, filename="قوة الوحدة.pdf") or ""
+    )
 
     return response
 
@@ -64,6 +74,7 @@ def workforce_code_pdf(
     headers = [
         "الاسم",
         "الوظيفة",
+        "الدرجة",
         "الرقم القومي",
         "رقم التليفون",
         "رقم الصرف",
@@ -84,7 +95,12 @@ def workforce_code_pdf(
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+    response["Content-Disposition"] = (
+        content_disposition_header(
+            as_attachment=False, filename="قوة الوحدة برقم الصرف.pdf"
+        )
+        or ""
+    )
 
     return response
 
@@ -380,7 +396,9 @@ def workforce_full_pdf(
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="selected_employees.pdf"'
+    response["Content-Disposition"] = (
+        content_disposition_header(as_attachment=False, filename="العاملين.pdf") or ""
+    )
 
     return response
 
@@ -496,6 +514,7 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         AddonTaskInline,
     ]
     actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx, workforce_full_pdf]
+    ordering = ["-id"]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
