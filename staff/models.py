@@ -366,6 +366,7 @@ class Institution(models.Model):
         return f"{self.get_kind_display()} {self.name}"
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = _("مؤسسة")
         verbose_name_plural = _("مؤسسات")
 
@@ -478,6 +479,7 @@ class Qualification(models.Model):
         return self.get_name_display()
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = _("مؤهل أساسي")
         verbose_name_plural = _("مؤهلات أساسية")
 

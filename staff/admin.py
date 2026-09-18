@@ -514,7 +514,6 @@ class EmployeeModelAdmin(admin.ModelAdmin[models.Employee]):
         AddonTaskInline,
     ]
     actions = [workforce_pdf, workforce_code_pdf, workforce_xlsx, workforce_full_pdf]
-    ordering = ["-id"]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
