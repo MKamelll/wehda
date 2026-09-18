@@ -33,6 +33,7 @@ def workforce_pdf(
     unit_name = queryset[0].health_unit.name
     health_admin = queryset[0].health_unit.get_health_admin_display()
     headers = [
+        "م",
         "الاسم",
         "الوظيفة",
         "الدرجة",
@@ -72,6 +73,7 @@ def workforce_code_pdf(
     unit_name = queryset[0].health_unit.name
     health_admin = queryset[0].health_unit.get_health_admin_display()
     headers = [
+        "م",
         "الاسم",
         "الوظيفة",
         "الدرجة",
@@ -129,6 +131,7 @@ def workforce_xlsx(
     worksheet.append([f"بيان العاملين بوحدة/ {unit_name}"])
 
     headers = [
+        "م",
         "الاسم",
         "أساسي/انتداب",
         "مكان العمل الأصلي للانتداب",
@@ -158,7 +161,7 @@ def workforce_xlsx(
         start_row=5, end_row=5, start_column=1, end_column=len(headers)
     )
 
-    for i in queryset:
+    for c, i in enumerate(queryset):
         current_secondment = i.current_secondment
         ow = str(current_secondment.original_workplace) if current_secondment else ""
         grade = i.current_grade.get_name_display().split(" ")[1]
@@ -180,6 +183,7 @@ def workforce_xlsx(
         trainings_names = "+".join([j.name for j in trainings])
         trainings_institutions = "+".join([str(j.institution or "") for j in trainings])
         row = [
+            str(c + 1),
             str(i.name),
             str(i.get_appointment_type_display()),
             ow,
@@ -248,6 +252,7 @@ def workforce_full_pdf(
     tables: list[dict[str, list[str] | list[list[str]]]] = [
         {
             "headers": [
+                "م",
                 "الاسم",
                 "أساسي/انتداب",
                 "مكان العمل الأصلي للانتداب",
@@ -258,6 +263,7 @@ def workforce_full_pdf(
         },
         {
             "headers": [
+                "م",
                 "الاسم",
                 "الوظيفة",
                 "تخصص/للأطباء البشري",
@@ -269,6 +275,7 @@ def workforce_full_pdf(
         },
         {
             "headers": [
+                "م",
                 "الاسم",
                 "تاريخ الميلاد",
                 "تاريخ استلام العمل داخل الوحدة",
@@ -279,6 +286,7 @@ def workforce_full_pdf(
         },
         {
             "headers": [
+                "م",
                 "الاسم",
                 "العنوان (محل الإقامة)",
                 "درجه علميه(دبلومه-ماجستير-دكتوراه-زماله)",
@@ -289,6 +297,7 @@ def workforce_full_pdf(
         },
         {
             "headers": [
+                "م",
                 "الاسم",
                 "تدريبات التي تم الحصول عليها(دورات)",
                 "مكان الحصول علي الدورات التدريبيه",
@@ -299,8 +308,9 @@ def workforce_full_pdf(
     ]
 
     table_1_rows = []
-    for i in queryset:
+    for c, i in enumerate(queryset):
         row = []
+        row.append(str(c + 1))
         row.append(str(i.name))
         row.append(i.get_appointment_type_display())
         current_secondment = i.current_secondment
@@ -318,8 +328,9 @@ def workforce_full_pdf(
     tables[0]["rows"] = table_1_rows
 
     table_2_rows = []
-    for i in queryset:
+    for c, i in enumerate(queryset):
         row = []
+        row.append(str(c + 1))
         row.append(str(i.name))
         row.append(i.get_job_title_display())
         doctor = i.doctor_details.first()
@@ -336,8 +347,9 @@ def workforce_full_pdf(
     tables[1]["rows"] = table_2_rows
 
     table_3_rows = []
-    for i in queryset:
+    for c, i in enumerate(queryset):
         row = []
+        row.append(str(c + 1))
         row.append(str(i.name))
         row.append(str(i.birth_date))
         row.append(str(i.job_start_date or ""))
@@ -348,8 +360,9 @@ def workforce_full_pdf(
     tables[2]["rows"] = table_3_rows
 
     table_4_rows = []
-    for i in queryset:
+    for c, i in enumerate(queryset):
         row = []
+        row.append(str(c + 1))
         row.append(str(i.name))
         address = i.address or ""
         row.append(str(address))
@@ -369,8 +382,9 @@ def workforce_full_pdf(
     tables[3]["rows"] = table_4_rows
 
     table_5_rows = []
-    for i in queryset:
+    for c, i in enumerate(queryset):
         row = []
+        row.append(str(c + 1))
         row.append(str(i.name))
         trainings = i.training_certifications.select_related("institution")
         trainings_names = "+".join([j.name for j in trainings])

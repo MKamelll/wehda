@@ -43,6 +43,11 @@
         text-align: right;
       }
 
+      tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
       th {
         background-color: #f2f2f2;
       }
@@ -84,6 +89,7 @@
       <tbody>
         {% for employee in employees %}
           <tr>
+            <td>{{ forloop.counter }}</td>
             <td>{{ employee.name }}</td>
             <td>{{ employee.get_job_title_display }}</td>
             <td>{{ employee.current_grade_short }}</td>
