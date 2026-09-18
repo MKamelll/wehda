@@ -431,7 +431,13 @@ class Qualification(models.Model):
 
         HIGH_SCHOOL = "HIGH_SCHOOL", _("ثانوية عامة")
         AZHAR_HIGH_SCHOOL = "AZHAR_HIGH_SCHOOL", _("ثانوية أزهري")
-        TECHNICAL_DIPLOMA = "TECHNICAL_DIPLOMA", _("دبلوم فني")
+        DIPLOMA_TRADING = "DIPLOMA_TRADING", _("دبلوم تجاري")
+        DIPLOMA_NURSING = "DIPLOMA_NURSING", _("دبلوم تمريض")
+        DIPLOMA_AGRICULTURAL = "DIPLOMA_AGRICULTURAL", _("دبلوم زراعي")
+        DIPLOMA_INDUSTRIAL = "DIPLOMA_INDUSTRIAL", _("دبلوم صناعي")
+        DIPLOMA_HOTEL = "DIPLOMA_HOTEL", _("دبلوم فندقي")
+        DIPLOMA_COMMUNITY = "DIPLOMA_COMMUNITY", _("دبلوم خدمة اجتماعية")
+        DIPLOMA_HEALTHCARE = "DIPLOMA_HEALTHCARE", _("دبلوم فني صحي")
 
         PREPARATORY_SCHOOL = "PREPARATORY_SCHOOL", _("شهادة إعدادية")
         CAN_READ = "CAN_READ", _("محو الأمية")
