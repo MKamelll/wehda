@@ -45,6 +45,8 @@ def workforce_pdf(
         "staff/pdf_template.djhtml",
         context={
             "employees": queryset,
+            "include_phone_number": True,
+            "title": f"قوة وحدة طب الأسرة ب{unit_name}",
             "headers": headers,
             "unit_name": unit_name,
             "health_admin": health_admin,
@@ -78,7 +80,6 @@ def workforce_code_pdf(
         "الوظيفة",
         "الدرجة",
         "الرقم القومي",
-        "رقم التليفون",
         "رقم الصرف",
         "ملاحظـــات",
     ]
@@ -86,6 +87,8 @@ def workforce_code_pdf(
         "staff/pdf_template.djhtml",
         context={
             "employees": queryset,
+            "include_phone_number": False,
+            "title": f"كشف بأسماء المستحقين للمرتبات لشهر ............. سنة .................",
             "headers": headers,
             "unit_name": unit_name,
             "health_admin": health_admin,

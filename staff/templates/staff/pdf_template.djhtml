@@ -7,7 +7,7 @@
     <style>
       @page {
         size: {{ page_size }};
-        margin: 20mm;
+        margin: 1in 0.25in 0.25in 0.25in;
         @top-right {
           content: element(MultiLineHeader);
           vertical-align: bottom;
@@ -40,7 +40,7 @@
       th, td {
         border: 1px solid #999999;
         padding: 8px;
-        text-align: right;
+        text-align: center;
       }
 
       tr {
@@ -48,16 +48,12 @@
         break-inside: avoid;
       }
 
-      th {
-        background-color: #f2f2f2;
-      }
-
       h2 {
         text-align: center;
       }
 
       .header {
-        font-size: 12pt; 
+        font-size: 10pt; 
         font-weight: bold;
         color: #111111;
       }
@@ -72,16 +68,34 @@
         text-align: center;
       }
 
+      .full-size-header {
+        text-align: center;
+      }
+
+      .end-of-content-footer {;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        font-weight: bold;
+        break-inside: avoid;
+      }
+
     </style>
   </head>
   <body>
     <div class="header-container">
+      <div class="header">مديرية الشئون الصحية بكفر الشيخ</div>
       <div class="header">الإدارة الصحية ب{{ health_admin }}</div>
       <div class="header">وحدة {{ unit_name }} الصحية</div>
     </div>
-    <h2>قـــوة وحـــدة طـــب الأســــرة ب{{ unit_name }}</h2>
     <table>
       <thead>
+        <tr>
+          <th class="full-size-header" colspan="{{ headers|length }}">{{ title }}</th>
+        </tr>
         <tr>
           {% for header in headers %}<th>{{ header }}</th>{% endfor %}
         </tr>
@@ -94,7 +108,7 @@
             <td>{{ employee.get_job_title_display }}</td>
             <td>{{ employee.current_grade_short }}</td>
             <td>{{ employee.national_id }}</td>
-            <td class="phone-col">{{ employee.phone_number }}</td>
+            {% if include_phone_number %}<td class="phone-col">{{ employee.phone_number }}</td>{% endif %}
             {% for i in empty_cols %}<td></td>{% endfor %}
           </tr>
         {% empty %}
@@ -104,5 +118,9 @@
         {% endfor %}
       </tbody>
     </table>
+    <footer class="end-of-content-footer">
+      <div class="footer-right">المسئول</div>
+      <div class="footer-left">يعتمد مدير الوحدة</div>
+    </footer>
   </body>
 </html>
