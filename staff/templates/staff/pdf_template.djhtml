@@ -39,7 +39,7 @@
 
       th, td {
         border: 1px solid #999999;
-        padding: 8px;
+        padding: 8px 4px;
         text-align: center;
       }
 
@@ -60,7 +60,7 @@
 
       .phone-col {
         direction: ltr !important;
-        text-align: right !important;
+        text-align: center !important;
         unicode-bidi: embed;
       }
 
