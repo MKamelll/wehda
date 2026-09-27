@@ -39,23 +39,23 @@
 
       th, td {
         border: 1px solid #999999;
-        padding: 8px 4px;
+        white-space: nowrap;
         text-align: center;
+        padding: 8px 4px;
+      }
+
+      td.tight {
+        width: 1%;
+        white-space: nowrap;
+      }
+
+      td.expand {
+        width: auto;
       }
 
       tr {
         page-break-inside: avoid;
         break-inside: avoid;
-      }
-
-      h2 {
-        text-align: center;
-      }
-
-      .header {
-        font-size: 10pt; 
-        font-weight: bold;
-        color: #111111;
       }
 
       .phone-col {
@@ -87,9 +87,9 @@
   </head>
   <body>
     <div class="header-container">
-      <div class="header">مديرية الشئون الصحية بكفر الشيخ</div>
-      <div class="header">الإدارة الصحية ب{{ health_admin }}</div>
-      <div class="header">وحدة {{ unit_name }} الصحية</div>
+      <div>مديرية الشئون الصحية بكفر الشيخ</div>
+      <div>الإدارة الصحية ب{{ health_admin }}</div>
+      <div>وحدة {{ unit_name }} الصحية</div>
     </div>
     <table>
       <thead>
@@ -103,13 +103,13 @@
       <tbody>
         {% for employee in employees %}
           <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ employee.name }}</td>
-            <td>{{ employee.get_job_title_display }}</td>
-            <td>{{ employee.current_grade_short }}</td>
-            <td>{{ employee.national_id }}</td>
-            {% if include_phone_number %}<td class="phone-col">{{ employee.phone_number }}</td>{% endif %}
-            {% for i in empty_cols %}<td></td>{% endfor %}
+            <td class="tight">{{ forloop.counter }}</td>
+            <td class="tight">{{ employee.name }}</td>
+            <td class="tight">{{ employee.get_job_title_display }}</td>
+            <td class="tight">{{ employee.current_grade_short }}</td>
+            <td class="tight">{{ employee.national_id }}</td>
+            {% if include_phone_number %}<td class="tight phone-col">{{ employee.phone_number.as_national }}</td>{% endif %}
+            {% for i in empty_cols %}<td class="expand"></td>{% endfor %}
           </tr>
         {% empty %}
           <tr>
