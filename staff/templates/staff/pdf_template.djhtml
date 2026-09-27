@@ -58,6 +58,10 @@
         break-inside: avoid;
       }
 
+      tfoot {
+        display: table-footer-group;
+      }
+
       .phone-col {
         direction: ltr !important;
         text-align: center !important;
@@ -70,17 +74,6 @@
 
       .full-size-header {
         text-align: center;
-      }
-
-      .end-of-content-footer {;
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-        padding-top: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 10pt;
-        font-weight: bold;
-        break-inside: avoid;
       }
 
     </style>
@@ -100,6 +93,18 @@
           {% for header in headers %}<th>{{ header }}</th>{% endfor %}
         </tr>
       </thead>
+      <tfoot>
+        <tr>
+          <td colspan="{{ headers|length }}" style="border: none;">
+            <div style="display: flex;
+                        flex-direction: row;
+                        justify-content: space-between">
+              <h4>المسئول</h4>
+              <h4>مدير الوحدة</h4>
+            </div>
+          </td>
+        </tr>
+      </tfoot>
       <tbody>
         {% for employee in employees %}
           <tr>
@@ -118,9 +123,5 @@
         {% endfor %}
       </tbody>
     </table>
-    <footer class="end-of-content-footer">
-      <div class="footer-right">المسئول</div>
-      <div class="footer-left">يعتمد مدير الوحدة</div>
-    </footer>
   </body>
 </html>
